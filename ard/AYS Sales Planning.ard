@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<AddOnRegData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SlientInstallation="No" SlientUpgrade="No" Partnernmsp="FT" SchemaVersion="3.0" Type="" MultipleVersion="false" OnDemand="" OnPremise="" ExtName="Sales Planning" ExtVersion="18.03.0113" Contdata="" Partner="Fast Track SBOi" DBType="Both" ClientType="A">
+<AddOnRegData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SlientInstallation="No" SlientUpgrade="No" Partnernmsp="FT" SchemaVersion="3.0" Type="" MultipleVersion="false" OnDemand="" OnPremise="" ExtName="AYS Sales Planning" ExtVersion="24.01.0001" Contdata="" Partner="Fast Track SBOi" DBType="Both" ClientType="A">
   <Validity>
     <SBOCompatibility>
       <Version From="10.0" To="10.0" />
@@ -18,7 +18,7 @@
   </Configuration>
   <Addons>
     <Addon Name="Sales Planning" Group="" ForceFlag="" Visible="" AutoAssign="" SelfUpgrd="">
-      <x86 AddonExe="" AddonSig="">
+      <x86 AddonExe="" AddonSig="" AddonSigSha256="">
         <Installation>
           <Files />
         </Installation>
@@ -26,71 +26,71 @@
           <Files />
         </Uninstallation>
       </x86>
-      <x64 AddonExe="Runtime.exe" AddonSig="E9DED50B121DF94A508F194D72E7E8E1" ExeDir="X64Client">
+      <x64 AddonExe="C:\projects einvoice\LW Addon Preparation\AYS-SalesPlanning Addon Live (v10)\X64Client\Runtime.exe" AddonSig="E9DED50B121DF94A508F194D72E7E8E1" ExeDir="X64Client">
         <Installation>
           <Files>
-            <File FileName="X64Client\APPROVAL2.srf">
+            <File FileName="APPROVAL2.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\BATCHNO.srf">
+            <File FileName="BATCHNO.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\CFL.bmp">
+            <File FileName="CFL.bmp">
               <Actions />
             </File>
-            <File FileName="X64Client\FT_CHARGE.srf">
+            <File FileName="FT_CHARGE.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\FT_SPLAN.srf">
+            <File FileName="FT_SPLAN.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\FT_TPPLAN.srf">
+            <File FileName="FT_TPPLAN.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\Interop.SAPbobsCOM.dll">
+            <File FileName="Interop.SAPbobsCOM.dll">
               <Actions />
             </File>
-            <File FileName="X64Client\Interop.SAPbouiCOM.dll">
+            <File FileName="Interop.SAPbouiCOM.dll">
               <Actions />
             </File>
-            <File FileName="X64Client\Runtime.exe">
+            <File FileName="Runtime.exe">
               <Actions />
             </File>
-            <File FileName="X64Client\Runtime.pdb">
+            <File FileName="Runtime.pdb">
               <Actions />
             </File>
           </Files>
         </Installation>
         <Uninstallation>
           <Files>
-            <File FileName="X64Client\APPROVAL2.srf">
+            <File FileName="APPROVAL2.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\BATCHNO.srf">
+            <File FileName="BATCHNO.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\CFL.bmp">
+            <File FileName="CFL.bmp">
               <Actions />
             </File>
-            <File FileName="X64Client\FT_CHARGE.srf">
+            <File FileName="FT_CHARGE.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\FT_SPLAN.srf">
+            <File FileName="FT_SPLAN.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\FT_TPPLAN.srf">
+            <File FileName="FT_TPPLAN.srf">
               <Actions />
             </File>
-            <File FileName="X64Client\Interop.SAPbobsCOM.dll">
+            <File FileName="Interop.SAPbobsCOM.dll">
               <Actions />
             </File>
-            <File FileName="X64Client\Interop.SAPbouiCOM.dll">
+            <File FileName="Interop.SAPbouiCOM.dll">
               <Actions />
             </File>
-            <File FileName="X64Client\Runtime.exe">
+            <File FileName="Runtime.exe">
               <Actions />
             </File>
-            <File FileName="X64Client\Runtime.pdb">
+            <File FileName="Runtime.pdb">
               <Actions />
             </File>
           </Files>
