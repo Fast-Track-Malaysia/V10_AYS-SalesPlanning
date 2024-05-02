@@ -2136,39 +2136,42 @@ namespace FT_ADDON.AYS
             oForm.Freeze(true);
 
             #region with bin
-            string sql = @"SELECT 
-t01.ItemCode, 
-t01.WhsCode, 
-t01.BinCode,
-t01.BinAbs,
-t01.BatchNum,
-(case when t01.BatchNum = '' then TotalStockBin else t01.TotalStockBinBatch end) as OnHand
-from
-(SELECT 
-T0.ItemCode, 
-T5.ItemName, 
-T0.WhsCode, 
-T1.BinCode,
-T2.BinAbs,
-isnull(T4.DistNumber,'') as BatchNum,
-SUM(T3.OnHandQty) as 'TotalStockBinBatch',
-SUM(T2.OnHandQty) as 'TotalStockBin',
-SUM(T0.OnHand) AS 'TotalStockWarehouse'
-FROM 
-OITW T0
-INNER JOIN OBIN T1 ON T0.WhsCode = T1.WhsCode
-INNER JOIN OIBQ T2 ON T2.WhsCode = T0.WhsCode AND T1.AbsEntry = T2.BinAbs AND T0.ItemCode = T2.ItemCode
-left JOIN OBBQ T3 ON T3.ItemCode = T0.ItemCode AND T3.BinAbs = T1.AbsEntry AND T3.WhsCode = T2.WhsCode
-left JOIN OBTN T4 ON T4.AbsEntry = T3.SnBMDAbs
-INNER JOIN OITM T5 ON T5.ItemCode = T0.ItemCode
-INNER JOIN OWHS ON OWHS.BinActivat = 'Y' and OWHS.WhsCode = T0.WhsCode
-WHERE 
-T2.OnHandQty > 0 
-or T3.OnHandQty > 0
-GROUP BY 
-T0.ItemCode, T5.ItemName, T0.WhsCode, 
-T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
-) t01";
+            string sql = "exec sp_sqlbatch2 ";
+//@"SELECT 
+//t01.ItemCode, 
+//t01.WhsCode, 
+//t01.BinCode,
+//t01.BinAbs,
+//t01.BatchNum,
+//(case when t01.BatchNum = '' then TotalStockBin else t01.TotalStockBinBatch end) as OnHand
+//, t01.U_MnfSeria, t01.U_LotNumbe
+//from
+//(SELECT 
+//T0.ItemCode, 
+//T5.ItemName, 
+//T0.WhsCode, 
+//T1.BinCode,
+//T2.BinAbs,
+//isnull(T4.DistNumber,'') as BatchNum,
+//SUM(T3.OnHandQty) as 'TotalStockBinBatch',
+//SUM(T2.OnHandQty) as 'TotalStockBin',
+//SUM(T0.OnHand) AS 'TotalStockWarehouse'
+//, isnull(T4.MnfSerial,'') as U_MnfSeria, isnull(T4.LotNumber,'') as U_LotNumbe
+//FROM 
+//OITW T0
+//INNER JOIN OBIN T1 ON T0.WhsCode = T1.WhsCode
+//INNER JOIN OIBQ T2 ON T2.WhsCode = T0.WhsCode AND T1.AbsEntry = T2.BinAbs AND T0.ItemCode = T2.ItemCode
+//left JOIN OBBQ T3 ON T3.ItemCode = T0.ItemCode AND T3.BinAbs = T1.AbsEntry AND T3.WhsCode = T2.WhsCode
+//left JOIN OBTN T4 ON T4.AbsEntry = T3.SnBMDAbs
+//INNER JOIN OITM T5 ON T5.ItemCode = T0.ItemCode
+//INNER JOIN OWHS ON OWHS.BinActivat = 'Y' and OWHS.WhsCode = T0.WhsCode
+//WHERE 
+//(T2.OnHandQty > 0 
+//or T3.OnHandQty > 0)
+//GROUP BY 
+//T0.ItemCode, T5.ItemName, T0.WhsCode, 
+//T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
+//, T4.MnfSerial, T4.LotNumber) t01";
 
             SAPbouiCOM.UserDataSource oUDS = null;
             oUDS = oForm.DataSources.UserDataSources.Add("sqlbatch2", SAPbouiCOM.BoDataType.dt_LONG_TEXT);
@@ -2176,7 +2179,8 @@ T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
             #endregion
 
             #region without bin
-            sql = "select t01.ItemCode, t01.WhsCode, '' as BinCode, 0 as BinAbs, t01.BatchNum, t01.OnHand from (select T0.[ItemCode], T0.[WhsCode], T0.[BatchNum], SUM(CASE T0.[Direction] when 0 then 1 else -1 end * T0.[Quantity]) as [OnHand] FROM IBT1 T0 inner join OITM T9 on T9.ItemCode = T0.ItemCode and T9.InvntItem = 'Y' and T9.SellItem = 'Y' and T9.ManBtchNum = 'Y' group by T0.[ItemCode], T0.[WhsCode], T0.[BatchNum]) t01";
+            sql = "exec sp_sqlbatch1 ";
+//"select t01.ItemCode, t01.WhsCode, '' as BinCode, 0 as BinAbs, t01.BatchNum, t01.OnHand from (select T0.[ItemCode], T0.[WhsCode], T0.[BatchNum], SUM(CASE T0.[Direction] when 0 then 1 else -1 end * T0.[Quantity]) as [OnHand] FROM IBT1 T0 inner join OITM T9 on T9.ItemCode = T0.ItemCode and T9.InvntItem = 'Y' and T9.SellItem = 'Y' and T9.ManBtchNum = 'Y' group by T0.[ItemCode], T0.[WhsCode], T0.[BatchNum]) t01";
 
             oUDS = oForm.DataSources.UserDataSources.Add("sqlbatch1", SAPbouiCOM.BoDataType.dt_LONG_TEXT);
             oUDS.ValueEx = sql;
@@ -2219,7 +2223,7 @@ T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
 
             oColumn = oMatrix.Columns.Add("U_BIN", SAPbouiCOM.BoFormItemTypes.it_EDIT);
             oColumn.TitleObject.Caption = "Bin";
-            oColumn.Width = 130;
+            oColumn.Width = 140;
             oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_BIN");
             oColumn.Editable = false;
 
@@ -2232,7 +2236,7 @@ T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
 
             oColumn = oMatrix.Columns.Add("U_BATCHNUM", SAPbouiCOM.BoFormItemTypes.it_EDIT);
             oColumn.TitleObject.Caption = "Batch No";
-            oColumn.Width = 80;
+            oColumn.Width = 60;
             oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_BATCHNUM");
             oColumn.Editable = false;
 
@@ -2248,6 +2252,18 @@ T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
             oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_QUANTITY");
             oColumn.ColumnSetting.SumType = SAPbouiCOM.BoColumnSumType.bst_Auto;
             oColumn.AffectsFormMode = false;
+
+            oColumn = oMatrix.Columns.Add("U_MnfSeria", SAPbouiCOM.BoFormItemTypes.it_EDIT);
+            oColumn.TitleObject.Caption = "Attribute 1";
+            oColumn.Width = 60;
+            oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_MnfSeria");
+            oColumn.Editable = false;
+
+            oColumn = oMatrix.Columns.Add("U_LotNumbe", SAPbouiCOM.BoFormItemTypes.it_EDIT);
+            oColumn.TitleObject.Caption = "Attribute 2";
+            oColumn.Width = 60;
+            oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_LotNumbe");
+            oColumn.Editable = false;
             #endregion
 
             #region grid2_BatchDS
@@ -2273,7 +2289,7 @@ T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
 
             oColumn = oMatrix.Columns.Add("U_BIN", SAPbouiCOM.BoFormItemTypes.it_EDIT);
             oColumn.TitleObject.Caption = "Bin";
-            oColumn.Width = 150;
+            oColumn.Width = 140;
             oColumn.DataBind.SetBound(true, BatchDS, "U_BIN");
             oColumn.Editable = false;
 
@@ -2286,7 +2302,7 @@ T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
 
             oColumn = oMatrix.Columns.Add("U_BATCHNUM", SAPbouiCOM.BoFormItemTypes.it_EDIT);
             oColumn.TitleObject.Caption = "Batch No";
-            oColumn.Width = 80;
+            oColumn.Width = 60;
             oColumn.DataBind.SetBound(true, BatchDS, "U_BATCHNUM");
             oColumn.Editable = false;
 
@@ -2296,6 +2312,18 @@ T0.WhsCode, T1.BinCode, T2.BinAbs, T4.DistNumber
             oColumn.DataBind.SetBound(true, BatchDS, "U_QUANTITY");
             oColumn.Editable = false;
             oColumn.ColumnSetting.SumType = SAPbouiCOM.BoColumnSumType.bst_Auto;
+
+            oColumn = oMatrix.Columns.Add("U_MnfSeria", SAPbouiCOM.BoFormItemTypes.it_EDIT);
+            oColumn.TitleObject.Caption = "Attribute 1";
+            oColumn.Width = 60;
+            oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_MnfSeria");
+            oColumn.Editable = false;
+
+            oColumn = oMatrix.Columns.Add("U_LotNumbe", SAPbouiCOM.BoFormItemTypes.it_EDIT);
+            oColumn.TitleObject.Caption = "Attribute 2";
+            oColumn.Width = 60;
+            oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_LotNumbe");
+            oColumn.Editable = false;
             #endregion
 
             #region grid3_DetailDS

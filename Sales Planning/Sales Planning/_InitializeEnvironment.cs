@@ -549,6 +549,11 @@ namespace FT_ADDON.AYS
                 if (!app.udfExist("@FT_BATCH", "BINABS"))
                     if (!app.createField("@FT_BATCH", "BINABS", "Bin Entry", SAPbobsCOM.BoFieldTypes.db_Numeric, 11, "0")) goto ErrorHandler;
 
+                if (!app.udfExist("@FT_BATCH", "MnfSeria"))
+                    if (!app.createField("@FT_BATCH", "MnfSeria", "Attribute 1", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_BATCH", "LotNumbe"))
+                    if (!app.createField("@FT_BATCH", "LotNumbe", "Attribute 2", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+
                 if (!app.udfExist("@TRANSPORTER_AREA_D", "EXPIRED"))
                     if (!app.createField("@TRANSPORTER_AREA_D", "EXPIRED", "Expired", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "N", false, SAPbobsCOM.BoFldSubTypes.st_None, "Y:Yes|N:No", "")) goto ErrorHandler;
 

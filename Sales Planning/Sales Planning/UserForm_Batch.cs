@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Text;
 
 namespace FT_ADDON.AYS
@@ -84,8 +85,37 @@ namespace FT_ADDON.AYS
                         //}
                         break;
                     case SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED:
-
-                        if (pVal.ItemUID == "cb_add" || pVal.ItemUID == "cb_delete")
+                        if (pVal.ItemUID == "cb_find")
+                        {
+                            SAPbouiCOM.DBDataSource oDS = oForm.DataSources.DBDataSources.Item("@FT_BATCH");
+                            string findval = oForm.DataSources.UserDataSources.Item("UD_0").ValueEx.Trim().ToUpper();
+                            SAPbouiCOM.Matrix grid1 = oForm.Items.Item("grid1").Specific as SAPbouiCOM.Matrix;
+                            grid1.ClearSelections();
+                            for (int x = 0; x < oDS.Size; x++)
+                            {
+                                if (oDS.GetValue("U_BIN", x).ToUpper().Contains(findval))
+                                {
+                                    grid1.SelectRow(x + 1, true, false);
+                                    break;
+                                }
+                                if (oDS.GetValue("U_BATCHNUM", x).ToUpper().Contains(findval))
+                                {
+                                    grid1.SelectRow(x + 1, true, false);
+                                    break;
+                                }
+                                if (oDS.GetValue("U_MnfSeria", x).ToUpper().Contains(findval))
+                                {
+                                    grid1.SelectRow(x + 1, true, false);
+                                    break;
+                                }
+                                if (oDS.GetValue("U_LotNumbe", x).ToUpper().Contains(findval))
+                                {
+                                    grid1.SelectRow(x + 1, true, false);
+                                    break;
+                                }
+                            }
+                        }
+                        else if (pVal.ItemUID == "cb_add" || pVal.ItemUID == "cb_delete")
                         {
 
                             SAPbouiCOM.Matrix oMatrix = (SAPbouiCOM.Matrix)oForm.Items.Item("grid3").Specific;
@@ -500,10 +530,14 @@ namespace FT_ADDON.AYS
                         else
                         {
                             string query = "";
+                            //if (bin == "Y")
+                            //    query = sql + " where ItemCode = '" + itemcode + "' and WhsCode = '" + whscode + "' order by BinCode, BatchNum";
+                            //else
+                            //    query = sql + " where ItemCode = '" + itemcode + "' and WhsCode = '" + whscode + "' and OnHand > 0 order by BinCode, BatchNum";
                             if (bin == "Y")
-                                query = sql + " where ItemCode = '" + itemcode + "' and WhsCode = '" + whscode + "' order by BinCode, BatchNum";
+                                query = $"{sql} '{itemcode}', '{whscode}'";
                             else
-                                query = sql + " where ItemCode = '" + itemcode + "' and WhsCode = '" + whscode + "' and OnHand > 0 order by BinCode, BatchNum";
+                                query = $"{sql} '{itemcode}', '{whscode}'";
 
                             oDT.ExecuteQuery(query);
 
@@ -527,6 +561,8 @@ namespace FT_ADDON.AYS
                                     oDS.SetValue("U_BIN", oDS.Size - 1, oDT.GetValue(2, x).ToString().Trim());
                                     oDS.SetValue("U_BINABS", oDS.Size - 1, oDT.GetValue(3, x).ToString().Trim());
                                     oDS.SetValue("U_BATCHNUM", oDS.Size - 1, oDT.GetValue(4, x).ToString().Trim());
+                                    oDS.SetValue("U_MnfSeria", oDS.Size - 1, oDT.GetValue(6, x).ToString().Trim());
+                                    oDS.SetValue("U_LotNumbe", oDS.Size - 1, oDT.GetValue(7, x).ToString().Trim());
                                     onhand = double.Parse(oDT.GetValue(5, x).ToString().Trim());
                                     for (int y = 0; y < oSDS.Size; y++)
                                     {
@@ -605,6 +641,8 @@ namespace FT_ADDON.AYS
                                         oDS.SetValue("U_BIN", oDS.Size - 1, oSDS.GetValue("U_BIN", x).Trim());
                                         oDS.SetValue("U_BINABS", oDS.Size - 1, oSDS.GetValue("U_BINABS", x).Trim());
                                         oDS.SetValue("U_BATCHNUM", oDS.Size - 1, oSDS.GetValue("U_BATCHNUM", x).Trim());
+                                        oDS.SetValue("U_MnfSeria", oDS.Size - 1, oSDS.GetValue("U_MnfSeria", x).Trim());
+                                        oDS.SetValue("U_LotNumbe", oDS.Size - 1, oSDS.GetValue("U_LotNumbe", x).Trim());
                                         oDS.SetValue("U_QUANTITY", oDS.Size - 1, oSDS.GetValue("U_QUANTITY", x).Trim());
                                     }
                                 }
