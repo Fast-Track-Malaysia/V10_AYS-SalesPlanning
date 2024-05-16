@@ -90,28 +90,21 @@ namespace FT_ADDON.AYS
                             SAPbouiCOM.DBDataSource oDS = oForm.DataSources.DBDataSources.Item("@FT_BATCH");
                             string findval = oForm.DataSources.UserDataSources.Item("UD_0").ValueEx.Trim().ToUpper();
                             SAPbouiCOM.Matrix grid1 = oForm.Items.Item("grid1").Specific as SAPbouiCOM.Matrix;
+                            grid1.FlushToDataSource();
+                            grid1.LoadFromDataSource();
                             grid1.ClearSelections();
                             for (int x = 0; x < oDS.Size; x++)
                             {
-                                if (oDS.GetValue("U_BIN", x).ToUpper().Contains(findval))
+                                string U_BIN = oDS.GetValue("U_BIN", x).ToUpper();
+                                string U_BATCHNUM = oDS.GetValue("U_BATCHNUM", x).ToUpper();
+                                string U_MnfSeria = oDS.GetValue("U_MnfSeria", x).ToUpper();
+                                string U_LotNumbe = oDS.GetValue("U_LotNumbe", x).ToUpper();
+                                if (U_BIN.Contains(findval)
+                                    || U_BATCHNUM.Contains(findval)
+                                    || U_MnfSeria.Contains(findval)
+                                    || U_LotNumbe.Contains(findval))
                                 {
-                                    grid1.SelectRow(x + 1, true, false);
-                                    break;
-                                }
-                                if (oDS.GetValue("U_BATCHNUM", x).ToUpper().Contains(findval))
-                                {
-                                    grid1.SelectRow(x + 1, true, false);
-                                    break;
-                                }
-                                if (oDS.GetValue("U_MnfSeria", x).ToUpper().Contains(findval))
-                                {
-                                    grid1.SelectRow(x + 1, true, false);
-                                    break;
-                                }
-                                if (oDS.GetValue("U_LotNumbe", x).ToUpper().Contains(findval))
-                                {
-                                    grid1.SelectRow(x + 1, true, false);
-                                    break;
+                                    grid1.SelectRow(x + 1, true, true);
                                 }
                             }
                         }
@@ -124,6 +117,8 @@ namespace FT_ADDON.AYS
                             string whscode = "";
                             string batchnum = "";
                             string bin = "";
+                            string U_MnfSeria = "";
+                            string U_LotNumbe = "";
                             int binabs = 0;
                             int row = oMatrix.GetNextSelectedRow(0);
                             if (row > 0)
@@ -171,6 +166,8 @@ namespace FT_ADDON.AYS
                                             batchnum = ((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_BATCHNUM").Cells.Item(x).Specific).Value.Trim();
                                             bin = ((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_BIN").Cells.Item(x).Specific).Value.Trim();
                                             binabs = int.Parse(((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_BINABS").Cells.Item(x).Specific).Value.Trim());
+                                            U_MnfSeria = ((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_MnfSeria").Cells.Item(x).Specific).Value.Trim();
+                                            U_LotNumbe = ((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_LotNumbe").Cells.Item(x).Specific).Value.Trim();
 
                                             found = false;
                                             for (int y = 0; y < oSDS.Size; y++)
@@ -211,6 +208,8 @@ namespace FT_ADDON.AYS
                                                 oDS2.SetValue("U_BINABS", oDS2.Size - 1, binabs.ToString());
                                                 oDS2.SetValue("U_BATCHNUM", oDS2.Size - 1, batchnum);
                                                 oDS2.SetValue("U_QUANTITY", oDS2.Size - 1, qty.ToString());
+                                                oDS2.SetValue("U_MnfSeria", oDS2.Size - 1, U_MnfSeria);
+                                                oDS2.SetValue("U_LotNumbe", oDS2.Size - 1, U_LotNumbe);
 
                                                 if (oSDS.Size == 0)
                                                     oSDS.InsertRecord(0);
@@ -229,6 +228,8 @@ namespace FT_ADDON.AYS
                                                 oSDS.SetValue("U_BINABS", oSDS.Size - 1, binabs.ToString());
                                                 oSDS.SetValue("U_BATCHNUM", oSDS.Size - 1, batchnum);
                                                 oSDS.SetValue("U_QUANTITY", oSDS.Size - 1, qty.ToString());
+                                                oSDS.SetValue("U_MnfSeria", oSDS.Size - 1, U_MnfSeria);
+                                                oSDS.SetValue("U_LotNumbe", oSDS.Size - 1, U_LotNumbe);
 
                                                 UserForm_APSA.arrangevisorder(oSForm, sbatchds);
 

@@ -2362,7 +2362,7 @@ namespace FT_ADDON.AYS
             oColumn.Editable = false;
             #endregion
 
-            oMatrix.SelectionMode = SAPbouiCOM.BoMatrixSelect.ms_Single;
+            oMatrix.SelectionMode = SAPbouiCOM.BoMatrixSelect.ms_Auto;
 
             SAPbouiCOM.DBDataSource dbs = oForm.DataSources.DBDataSources.Item(DetailDS);
             SAPbouiCOM.DBDataSource fdbs = oSForm.DataSources.DBDataSources.Item(DetailDS);
