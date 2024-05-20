@@ -26,7 +26,7 @@
           <Files />
         </Uninstallation>
       </x86>
-      <x64 AddonExe="C:\projects einvoice\LW Addon Preparation\AYS-SalesPlanning Addon Live (v10)\X64Client\Runtime.exe" AddonSig="E9DED50B121DF94A508F194D72E7E8E1" ExeDir="X64Client">
+      <x64 AddonExe="C:\Users\ykw\source\repos\V10_AYS-SalesPlanning\Sales Planning\bin\x64\Debug\Runtime.exe" AddonSig="E9DED50B121DF94A508F194D72E7E8E1" ExeDir="X64Client">
         <Installation>
           <Files>
             <File FileName="APPROVAL2.srf">
