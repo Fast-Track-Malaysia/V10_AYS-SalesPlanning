@@ -99,10 +99,12 @@ namespace FT_ADDON.AYS
                                 string U_BATCHNUM = oDS.GetValue("U_BATCHNUM", x).ToUpper();
                                 string U_MnfSeria = oDS.GetValue("U_MnfSeria", x).ToUpper();
                                 string U_LotNumbe = oDS.GetValue("U_LotNumbe", x).ToUpper();
+                                string U_Notes = oDS.GetValue("U_Notes", x).ToUpper();
                                 if (U_BIN.Contains(findval)
                                     || U_BATCHNUM.Contains(findval)
                                     || U_MnfSeria.Contains(findval)
-                                    || U_LotNumbe.Contains(findval))
+                                    || U_LotNumbe.Contains(findval)
+                                    || U_Notes.Contains(findval))
                                 {
                                     grid1.SelectRow(x + 1, true, true);
                                 }
@@ -119,6 +121,7 @@ namespace FT_ADDON.AYS
                             string bin = "";
                             string U_MnfSeria = "";
                             string U_LotNumbe = "";
+                            string U_Notes = "";
                             int binabs = 0;
                             int row = oMatrix.GetNextSelectedRow(0);
                             if (row > 0)
@@ -168,6 +171,7 @@ namespace FT_ADDON.AYS
                                             binabs = int.Parse(((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_BINABS").Cells.Item(x).Specific).Value.Trim());
                                             U_MnfSeria = ((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_MnfSeria").Cells.Item(x).Specific).Value.Trim();
                                             U_LotNumbe = ((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_LotNumbe").Cells.Item(x).Specific).Value.Trim();
+                                            U_Notes = ((SAPbouiCOM.EditText)oMatrix1.Columns.Item("U_Notes").Cells.Item(x).Specific).Value.Trim();
 
                                             found = false;
                                             for (int y = 0; y < oSDS.Size; y++)
@@ -210,6 +214,7 @@ namespace FT_ADDON.AYS
                                                 oDS2.SetValue("U_QUANTITY", oDS2.Size - 1, qty.ToString());
                                                 oDS2.SetValue("U_MnfSeria", oDS2.Size - 1, U_MnfSeria);
                                                 oDS2.SetValue("U_LotNumbe", oDS2.Size - 1, U_LotNumbe);
+                                                oDS2.SetValue("U_Notes", oDS2.Size - 1, U_Notes);
 
                                                 if (oSDS.Size == 0)
                                                     oSDS.InsertRecord(0);
@@ -230,6 +235,7 @@ namespace FT_ADDON.AYS
                                                 oSDS.SetValue("U_QUANTITY", oSDS.Size - 1, qty.ToString());
                                                 oSDS.SetValue("U_MnfSeria", oSDS.Size - 1, U_MnfSeria);
                                                 oSDS.SetValue("U_LotNumbe", oSDS.Size - 1, U_LotNumbe);
+                                                oSDS.SetValue("U_Notes", oSDS.Size - 1, U_Notes);
 
                                                 UserForm_APSA.arrangevisorder(oSForm, sbatchds);
 
@@ -564,6 +570,7 @@ namespace FT_ADDON.AYS
                                     oDS.SetValue("U_BATCHNUM", oDS.Size - 1, oDT.GetValue(4, x).ToString().Trim());
                                     oDS.SetValue("U_MnfSeria", oDS.Size - 1, oDT.GetValue(6, x).ToString().Trim());
                                     oDS.SetValue("U_LotNumbe", oDS.Size - 1, oDT.GetValue(7, x).ToString().Trim());
+                                    oDS.SetValue("U_Notes", oDS.Size - 1, oDT.GetValue(8, x).ToString().Trim());
                                     onhand = double.Parse(oDT.GetValue(5, x).ToString().Trim());
                                     for (int y = 0; y < oSDS.Size; y++)
                                     {
@@ -644,6 +651,7 @@ namespace FT_ADDON.AYS
                                         oDS.SetValue("U_BATCHNUM", oDS.Size - 1, oSDS.GetValue("U_BATCHNUM", x).Trim());
                                         oDS.SetValue("U_MnfSeria", oDS.Size - 1, oSDS.GetValue("U_MnfSeria", x).Trim());
                                         oDS.SetValue("U_LotNumbe", oDS.Size - 1, oSDS.GetValue("U_LotNumbe", x).Trim());
+                                        oDS.SetValue("U_Notes", oDS.Size - 1, oSDS.GetValue("U_Notes", x).Trim());
                                         oDS.SetValue("U_QUANTITY", oDS.Size - 1, oSDS.GetValue("U_QUANTITY", x).Trim());
                                     }
                                 }

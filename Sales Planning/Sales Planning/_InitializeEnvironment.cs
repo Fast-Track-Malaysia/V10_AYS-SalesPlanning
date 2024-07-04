@@ -553,11 +553,15 @@ namespace FT_ADDON.AYS
                     if (!app.createField("@FT_BATCH", "MnfSeria", "Attribute 1", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
                 if (!app.udfExist("@FT_BATCH", "LotNumbe"))
                     if (!app.createField("@FT_BATCH", "LotNumbe", "Attribute 2", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_BATCH", "Notes"))
+                    if (!app.createField("@FT_BATCH", "Notes", "Details", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
 
                 if (!app.udfExist("@FT_CHARGE2", "MnfSeria"))
                     if (!app.createField("@FT_CHARGE2", "MnfSeria", "Attribute 1", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
                 if (!app.udfExist("@FT_CHARGE2", "LotNumbe"))
                     if (!app.createField("@FT_CHARGE2", "LotNumbe", "Attribute 2", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_CHARGE2", "Notes"))
+                    if (!app.createField("@FT_CHARGE2", "Notes", "Details", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
 
                 if (!app.udfExist("@TRANSPORTER_AREA_D", "EXPIRED"))
                     if (!app.createField("@TRANSPORTER_AREA_D", "EXPIRED", "Expired", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "N", false, SAPbobsCOM.BoFldSubTypes.st_None, "Y:Yes|N:No", "")) goto ErrorHandler;

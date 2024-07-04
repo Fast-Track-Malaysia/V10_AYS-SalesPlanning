@@ -2264,6 +2264,12 @@ namespace FT_ADDON.AYS
             oColumn.Width = 60;
             oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_LotNumbe");
             oColumn.Editable = false;
+
+            oColumn = oMatrix.Columns.Add("U_Notes", SAPbouiCOM.BoFormItemTypes.it_EDIT);
+            oColumn.TitleObject.Caption = "Details";
+            oColumn.Width = 60;
+            oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_Notes");
+            oColumn.Editable = false;
             #endregion
 
             #region grid2_BatchDS
@@ -2323,6 +2329,12 @@ namespace FT_ADDON.AYS
             oColumn.TitleObject.Caption = "Attribute 2";
             oColumn.Width = 60;
             oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_LotNumbe");
+            oColumn.Editable = false;
+
+            oColumn = oMatrix.Columns.Add("U_Notes", SAPbouiCOM.BoFormItemTypes.it_EDIT);
+            oColumn.TitleObject.Caption = "Details";
+            oColumn.Width = 60;
+            oColumn.DataBind.SetBound(true, "@FT_BATCH", "U_Notes");
             oColumn.Editable = false;
             #endregion
 
