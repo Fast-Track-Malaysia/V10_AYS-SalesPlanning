@@ -3561,6 +3561,9 @@ namespace FT_ADDON.AYS
                         //}
                         
                         oDel.Address2 = rs.Fields.Item("Address").Value.ToString();
+                        #region einvoice
+                        ft_Functions.AssignEivHeader(oOrder, oDel);
+                        #endregion
                         rs.MoveFirst();
                         while (!rs.EoF)
                         {
@@ -3597,6 +3600,9 @@ namespace FT_ADDON.AYS
                                     if (!String.IsNullOrEmpty(oOrder.AddressExtension.BillToStreet)) oDel.AddressExtension.BillToStreet = oOrder.AddressExtension.BillToStreet;
                                     if (!String.IsNullOrEmpty(oOrder.AddressExtension.BillToStreetNo)) oDel.AddressExtension.BillToStreetNo = oOrder.AddressExtension.BillToStreetNo;
                                     if (!String.IsNullOrEmpty(oOrder.AddressExtension.BillToZipCode)) oDel.AddressExtension.BillToZipCode = oOrder.AddressExtension.BillToZipCode;
+                                    #region einvoice
+                                    ft_Functions.AssignEivBillAddress(oOrder, oDel);
+                                    #endregion
                                     //if (!String.IsNullOrEmpty(oOrder.Address2)) oDel.Address2 = oOrder.Address2;
                                     //if (!String.IsNullOrEmpty(oOrder.AddressExtension.ShipToAddress2)) oDO.AddressExtension.ShipToAddress2 = oSO.AddressExtension.ShipToAddress2;
                                     //if (!String.IsNullOrEmpty(oOrder.AddressExtension.ShipToAddress3)) oDO.AddressExtension.ShipToAddress3 = oSO.AddressExtension.ShipToAddress3;

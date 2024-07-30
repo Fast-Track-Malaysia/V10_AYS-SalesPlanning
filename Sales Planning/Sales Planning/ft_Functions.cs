@@ -1,5 +1,9 @@
-﻿using System;
+﻿using SAPbouiCOM;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 
 namespace FT_ADDON.AYS
@@ -8,6 +12,41 @@ namespace FT_ADDON.AYS
     {
         public ft_Functions() { }
 
+        public static void AssignEivHeader(SAPbobsCOM.Documents source, SAPbobsCOM.Documents target)
+        {
+            return;
+            for (int x = 0; x < source.UserFields.Fields.Count; x++)
+            {
+                string udf = source.UserFields.Fields.Item(x).Name;
+                if (!udf.StartsWith("U_EIV_")) continue;
+                if (udf == "U_EIV_LongUID") continue;
+                if (udf == "EIV_SubmissionUID") continue;
+                if (udf == "EIV_ValidateStatus") continue;
+
+                if (source.UserFields.Fields.Item(udf).Value != null)
+                    if (!String.IsNullOrEmpty(source.UserFields.Fields.Item(udf).Value.ToString()))
+                        target.UserFields.Fields.Item(udf).Value = source.UserFields.Fields.Item(udf).Value.ToString();
+
+            }
+        }
+        public static void AssignEivBillAddress(SAPbobsCOM.Documents source, SAPbobsCOM.Documents target)
+        {
+            //string udf = "U_EIV_ShippingNameB";
+            //var prop = source.AddressExtension.UserFields.Fields.GetType().GetProperties();
+
+            //foreach (PropertyInfo info in source.AddressExtension.UserFields.Fields.GetType().GetProperties().Where(pp => pp.Name.StartsWith("U_EIV_")))
+            for (int x = 0; x < source.AddressExtension.UserFields.Fields.Count; x++)
+            {
+                string udf = source.AddressExtension.UserFields.Fields.Item(x).Name;
+                if (!udf.StartsWith("U_EIV_")) continue;
+                if (!udf.EndsWith("B")) continue;
+                if (source.AddressExtension.UserFields.Fields.Item(udf).Value != null)
+                    if (!String.IsNullOrEmpty(source.AddressExtension.UserFields.Fields.Item(udf).Value.ToString()))
+                        target.AddressExtension.UserFields.Fields.Item(udf).Value = source.AddressExtension.UserFields.Fields.Item(udf).Value.ToString();
+
+            }
+
+        }
         public static int CheckSPNeeded(string type, string formtype, string docnum)
         {
             //return -1 if error
