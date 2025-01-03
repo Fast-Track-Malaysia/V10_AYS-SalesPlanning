@@ -139,8 +139,6 @@ namespace FT_ADDON.AYS
 
                 SAPbouiCOM.Form oForm = FT_ADDON.SAP.SBOApplication.Forms.AddEx(creationPackage);
 
-                int? count = (oForm.Items.Item("U_LORRY").Specific as SAPbouiCOM.ComboBox)?.ValidValues.Count;
-
                 oForm.Freeze(true);
                 oForm.AutoManaged = true;
 
