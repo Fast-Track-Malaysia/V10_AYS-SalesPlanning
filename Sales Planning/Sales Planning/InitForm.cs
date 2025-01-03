@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace FT_ADDON.AYS
 {
@@ -51,21 +52,94 @@ namespace FT_ADDON.AYS
 
             oForm.Visible = true;
         }
+
         public static void FT_SPLANscreenpainter(string dsname, string dsname1, string dsnameb)
         {
             try
             {
-
                 FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Initialize popup window...", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Warning);
+
+                #region generate driver lorry xml
                 System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
                 string path = System.Windows.Forms.Application.StartupPath;
                 xmlDoc.Load(path + "\\" + dsname + ".srf");
+
+                //string myxml = System.IO.File.ReadAllText(path + "\\" + dsname + ".srf");
+                //xmlDoc.LoadXml(myxml);
+
+                //XmlNamespaceManager nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
+                //nsManager.AddNamespace("ns", "http://example.com/schema");
+
+                //XmlNode uDriverNode = xmlDoc.SelectSingleNode("//ns:item[@uid='U_DRIVER']", nsManager);
+
+                XmlNode uDriverNode = xmlDoc.SelectSingleNode("//item[@uid='U_DRIVER']/specific/ValidValues/action");
+                XmlNode uLorryNode = xmlDoc.SelectSingleNode("//item[@uid='U_LORRY']/specific/ValidValues/action");
+
+                if (uDriverNode != null)
+                {
+                    string tempsql = "select convert(ntext, convert(nvarchar(max), (select code as [ValidValue/@value], [name] as [ValidValue/@description] from [@LORRY] FOR XML PATH(''), TYPE) ) )";
+                    
+                    SAPbobsCOM.Recordset temprs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
+                    temprs.DoQuery(tempsql);
+                    if (temprs.RecordCount > 0)
+                    {
+                        temprs.MoveFirst();
+                        string newValidValues = temprs.Fields.Item(0).Value.ToString();
+                        uDriverNode.InnerXml = newValidValues;
+                        //int len = newValidValues.Length;
+                        //XmlDocumentFragment newValidValuesNode = xmlDoc.CreateDocumentFragment();
+                        //newValidValuesNode.InnerXml = newValidValues;
+
+                        //XmlNode validValuesNode = uDriverNode.SelectSingleNode("//ValidValues");
+
+                        //if (validValuesNode != null)
+                        //{
+                        //    // Replace the old ValidValues node with the new one
+                        //    validValuesNode.ParentNode.ReplaceChild(newValidValuesNode, validValuesNode);
+                        //}
+
+                    }
+
+                    temprs = null;
+                }
+                if (uLorryNode != null)
+                {
+                    string tempsql = "select convert(ntext, convert(nvarchar(max), (select code as [ValidValue/@value], [name] as [ValidValue/@description] from [@LORRY] FOR XML PATH(''), TYPE) ) )";
+                    SAPbobsCOM.Recordset temprs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
+                    temprs.DoQuery(tempsql);
+                    if (temprs.RecordCount > 0)
+                    {
+                        temprs.MoveFirst();
+                        string newValidValues = temprs.Fields.Item(0).Value.ToString();
+                        uLorryNode.InnerXml = newValidValues;
+                        //int len = newValidValues.Length;
+                        //XmlDocumentFragment newValidValuesNode = xmlDoc.CreateDocumentFragment();
+                        //newValidValuesNode.InnerXml = newValidValues;
+
+                        //XmlNode validValuesNode = uLorryNode.SelectSingleNode("//ValidValues");
+
+                        //if (validValuesNode != null)
+                        //{
+                        //    // Replace the old ValidValues node with the new one
+                        //    validValuesNode.ParentNode.ReplaceChild(newValidValuesNode, validValuesNode);
+                        //}
+
+                    }
+
+
+
+                    temprs = null;
+                }
+
+                #endregion
 
                 SAPbouiCOM.FormCreationParams creationPackage = (SAPbouiCOM.FormCreationParams)FT_ADDON.SAP.SBOApplication.CreateObject(SAPbouiCOM.BoCreatableObjectType.cot_FormCreationParams);
                 creationPackage.UniqueID = "FT_" + (FT_ADDON.SAP.getNewformUID().ToString());
                 creationPackage.XmlData = xmlDoc.InnerXml;     // Load form from xml 
 
                 SAPbouiCOM.Form oForm = FT_ADDON.SAP.SBOApplication.Forms.AddEx(creationPackage);
+
+                int? count = (oForm.Items.Item("U_LORRY").Specific as SAPbouiCOM.ComboBox)?.ValidValues.Count;
 
                 oForm.Freeze(true);
                 oForm.AutoManaged = true;
@@ -397,19 +471,41 @@ namespace FT_ADDON.AYS
                         {
                             oItem = oForm.Items.Item(columnname);
                             oItem.DisplayDesc = true;
-                            oCombo = (SAPbouiCOM.ComboBox)oItem.Specific;
-
-                            dt = oForm.DataSources.DataTables.Add(linkedtable);
-                            dt.ExecuteQuery("select code, name from [@" + linkedtable + "]");
-                            for (int y = 0; y < dt.Rows.Count; y++)
+                            try
                             {
-                                ((SAPbouiCOM.ComboBox)oItem.Specific).ValidValues.Add(dt.GetValue(0, y).ToString(), dt.GetValue(1, y).ToString());
+                                oCombo = (SAPbouiCOM.ComboBox)oItem.Specific;
                             }
+                            catch
+                            {
+                                throw new Exception("[" + columnname + "] LinkTable UDF is not Combo Type in User Define Form.");
+                            }
+                            if (columnname == "U_DRIVER" || columnname == "U_LORRY")
+                            {
+
+                            }
+                            else
+                            {
+
+                                dt = oForm.DataSources.DataTables.Add(linkedtable);
+                                dt.ExecuteQuery("select code, name from [@" + linkedtable + "]");
+                                for (int y = 0; y < dt.Rows.Count; y++)
+                                {
+                                    ((SAPbouiCOM.ComboBox)oItem.Specific).ValidValues.Add(dt.GetValue(0, y).ToString(), dt.GetValue(1, y).ToString());
+                                }
+                            }
+
                         }
                         else if (oUF.Fields.Item(x).ValidValues.Count > 0)
                         {
                             oItem = oForm.Items.Item(columnname);
-                            oCombo = (SAPbouiCOM.ComboBox)oItem.Specific;
+                            try
+                            {
+                                oCombo = (SAPbouiCOM.ComboBox)oItem.Specific;
+                            }
+                            catch
+                            {
+                                throw new Exception("[" + columnname + "] Valid Value UDF is not Combo Type in User Define Form.");
+                            }
                             oItem.DisplayDesc = true;
 
                             //for (int y = 0; y < oUF.Fields.Item(x).ValidValues.Count; y++)
@@ -420,7 +516,15 @@ namespace FT_ADDON.AYS
                         else
                         {
                             oItem = oForm.Items.Item(columnname);
-                            oEdit = (SAPbouiCOM.EditText)oItem.Specific;
+
+                            try
+                            {
+                                oEdit = (SAPbouiCOM.EditText)oItem.Specific;
+                            }
+                            catch
+                            {
+                                throw new Exception("[" + columnname + "] Combo Type in User Define Form is not LinkTable UDF.");
+                            }
 
                             if (oUF.Fields.Item(x).Type == SAPbobsCOM.BoFieldTypes.db_Memo)
                             {
@@ -485,6 +589,7 @@ namespace FT_ADDON.AYS
                             //    oEdit.ChooseFromListAlias = "Name";
                             //    oItem.SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 9, SAPbouiCOM.BoModeVisualBehavior.mvb_False);
                             //}
+
                         }
 
                         if (columnname == "U_CARDCODE")
