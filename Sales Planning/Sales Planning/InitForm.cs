@@ -77,7 +77,7 @@ namespace FT_ADDON.AYS
 
                 if (uDriverNode != null)
                 {
-                    string tempsql = "select convert(ntext, convert(nvarchar(max), (select code as [ValidValue/@value], [name] as [ValidValue/@description] from [@LORRY] FOR XML PATH(''), TYPE) ) )";
+                    string tempsql = "select convert(ntext, convert(nvarchar(max), (select code as [ValidValue/@value], [name] as [ValidValue/@description] from [@DRIVER] FOR XML PATH(''), TYPE) ) )";
                     
                     SAPbobsCOM.Recordset temprs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
                     temprs.DoQuery(tempsql);
