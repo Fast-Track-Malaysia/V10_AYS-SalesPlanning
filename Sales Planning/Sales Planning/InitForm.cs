@@ -59,11 +59,12 @@ namespace FT_ADDON.AYS
             {
                 FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Initialize popup window...", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Warning);
 
-                #region generate driver lorry xml
                 System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
                 string path = System.Windows.Forms.Application.StartupPath;
                 xmlDoc.Load(path + "\\" + dsname + ".srf");
 
+                /*
+                #region generate driver lorry xml
                 //string myxml = System.IO.File.ReadAllText(path + "\\" + dsname + ".srf");
                 //xmlDoc.LoadXml(myxml);
 
@@ -132,6 +133,7 @@ namespace FT_ADDON.AYS
                 }
 
                 #endregion
+                */
 
                 SAPbouiCOM.FormCreationParams creationPackage = (SAPbouiCOM.FormCreationParams)FT_ADDON.SAP.SBOApplication.CreateObject(SAPbouiCOM.BoCreatableObjectType.cot_FormCreationParams);
                 creationPackage.UniqueID = "FT_" + (FT_ADDON.SAP.getNewformUID().ToString());
@@ -469,20 +471,20 @@ namespace FT_ADDON.AYS
                         {
                             oItem = oForm.Items.Item(columnname);
                             oItem.DisplayDesc = true;
-                            try
-                            {
-                                oCombo = (SAPbouiCOM.ComboBox)oItem.Specific;
-                            }
-                            catch
-                            {
-                                throw new Exception("[" + columnname + "] LinkTable UDF is not Combo Type in User Define Form.");
-                            }
                             if (columnname == "U_DRIVER" || columnname == "U_LORRY")
                             {
 
                             }
                             else
                             {
+                                try
+                                {
+                                    oCombo = (SAPbouiCOM.ComboBox)oItem.Specific;
+                                }
+                                catch
+                                {
+                                    throw new Exception("[" + columnname + "] LinkTable UDF is not Combo Type in User Define Form.");
+                                }
 
                                 dt = oForm.DataSources.DataTables.Add(linkedtable);
                                 dt.ExecuteQuery("select code, name from [@" + linkedtable + "]");
