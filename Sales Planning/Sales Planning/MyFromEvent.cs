@@ -15,11 +15,27 @@ namespace FT_ADDON.AYS
                 string formtype = oForm.TypeEx;
                 string cardcode = "";
                 string docnum = "";
+                bool takeaction = false;
 
                 if (pVal.EventType == SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED)
                 {
-                    if ((formtype == "1250000100" && pVal.ItemUID == "1250000001" && (oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE || oForm.Mode == SAPbouiCOM.BoFormMode.fm_UPDATE_MODE)) ||
-                        (pVal.ItemUID == "1" && oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE))
+                    //if (
+                    //    (
+                    //      formtype == "1250000100" && pVal.ItemUID == "1250000001" && (oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE || oForm.Mode == SAPbouiCOM.BoFormMode.fm_UPDATE_MODE)
+                    //    ) 
+                    //    ||
+                    //      (pVal.ItemUID == "1" && oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE))
+                    //{ }
+
+                    if (formtype == "1250000100" && pVal.ItemUID == "1250000001" && (oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE || oForm.Mode == SAPbouiCOM.BoFormMode.fm_UPDATE_MODE))
+                    {
+                        takeaction = true;
+                    }
+                    else if (pVal.ItemUID == "1" && (oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE || oForm.Mode == SAPbouiCOM.BoFormMode.fm_UPDATE_MODE))
+                    {
+                        takeaction = true;
+                    }
+                    if (takeaction)
                     {
 
                         if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
