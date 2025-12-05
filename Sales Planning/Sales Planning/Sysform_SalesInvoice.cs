@@ -120,10 +120,14 @@ namespace FT_ADDON.AYS
                         if (pVal.ItemUID == "btnJE")
                         {
                             SAPbouiCOM.EditText DocNum = oForm.Items.Item("8").Specific as SAPbouiCOM.EditText;
-
+                            if (oForm.Mode != BoFormMode.fm_OK_MODE)
+                            {
+                                SAP.SBOApplication.MessageBox("Cannot proceed with Non OK mode.", 1, "OK", "", "");
+                                return;
+                            }
                             if (DocNum != null)
                             {
-                                string queryCheckIfJeExist = $"SELECT BaseRef FROM OJDT WHERE BaseRef = '{DocNum.Value}' AND TransType = '13'";
+                                string queryCheckIfJeExist = $"SELECT Transid FROM OJDT WHERE U_ARInvNo = '{DocNum.Value}' AND TransType = '30'";
                                 SAPbobsCOM.Recordset rsFindJournalEntry = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
                                 rsFindJournalEntry.DoQuery(queryCheckIfJeExist);
 
@@ -144,7 +148,7 @@ namespace FT_ADDON.AYS
 
                                         if (!string.IsNullOrEmpty(DocEntry))
                                         {
-                                            CreateJournalEntry(DocEntry);
+                                            CreateJournalEntry(DocEntry, true);
                                         }
                                     }
                                 }
@@ -195,263 +199,31 @@ namespace FT_ADDON.AYS
         }
         public static void processDataEventafter(SAPbouiCOM.Form oForm, ref SAPbouiCOM.BusinessObjectInfo BusinessObjectInfo)
         {
-            JEHeader jehdr = new JEHeader();
-            JEDetails jedtl;
-            List<JEDetails> JEdtls = new List<JEDetails>();
-            try
+            switch (BusinessObjectInfo.EventType)
             {
-                switch (BusinessObjectInfo.EventType)
-                {
-                    case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD:
-                        if (!BusinessObjectInfo.ActionSuccess) return;
-
-                        SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
-                        SAPbobsCOM.Recordset rs1 = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
-
-                        System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
-                        xmlDoc.LoadXml(BusinessObjectInfo.ObjectKey);
-                        string bpType = "", cogsAcct = "";
-                        DateTime date = new DateTime();
-                        int retcode = 0;
-                        decimal temp = 0;
-                        decimal invtotaldiff = 0;
-                        int currentline = 0;
-                        string productgroup = "";
-                        string ChargeNo = "";
-                        string sql = "";
-                        string delno = "";
+                case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD:
+                    if (!BusinessObjectInfo.ActionSuccess) return;
 
 
-                        //sql = "select T0.docdate, T0.docnum, T4.U_Type, min(T1.docnum) as [DelNo] " +
-                        //    "from oinv T0 inner join " +
-                        //    "( " +
-                        //    "select oinv.docentry, isnull(odln.U_Diff, 0) as U_Diff, odln.docnum " +
-                        //    "from oinv inner join inv1 on oinv.docentry = inv1.docentry " +
-                        //    "inner join dln1 on inv1.baseentry = dln1.docentry and inv1.basetype = 15 " +
-                        //    "and inv1.BaseLine = dln1.LineNum " +
-                        //    "inner join odln  on dln1.docentry = odln.docentry and odln.CANCELED = 'N' " +
-                        //    "where oinv.DocEntry = " + xmlDoc.InnerText + " " +
-                        //    "group by oinv.docentry, odln.U_Diff, odln.docnum " +
-                        //    ") T1 on T0.docentry = T1.docentry " +
-                        //    "inner join ocrd T4 on T0.cardcode = T4.cardcode " +
-                        //    "where T0.docentry = " + xmlDoc.InnerText + " " +
-                        //    "group by T0.docdate, T0.docnum, T4.U_Type";
-                        sql = "select T0.docdate, T0.docnum, T4.U_Type, min(T3.docnum) as [DelNo] " +
-                            " from oinv T0 inner join inv1 T1 on T0.docentry = T1.docentry " +
-                            " inner join dln1 T2 on T1.baseentry = T2.docentry and T1.basetype = 15 " +
-                            " and T1.BaseLine = T2.LineNum " +
-                            " inner join odln T3 on T2.docentry = T3.docentry " +
-                            " inner join ocrd T4 on T0.cardcode = T4.cardcode " +
-                            " where T0.CANCELED = 'N' and T0.docentry = " + xmlDoc.InnerText + " " +
-                            " group by T0.docdate, T0.docnum, T4.U_Type";
-                        rs.DoQuery(sql);
-                        if (rs.RecordCount > 0)
-                        {
-                            rs.MoveFirst();
+                    System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+                    xmlDoc.LoadXml(BusinessObjectInfo.ObjectKey);
+                    string docentry = xmlDoc.InnerText;
+                    CreateJournalEntry(docentry);
+                    break;
 
-                            //different = double.Parse(rs.Fields.Item("U_Diff").Value.ToString());
-
-                            //if (different != 0)
-                            {
-                                SAPbobsCOM.JournalEntries oJE = (SAPbobsCOM.JournalEntries)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oJournalEntries);
-
-                                date = DateTime.Parse(rs.Fields.Item("docdate").Value.ToString());
-                                oJE.ReferenceDate = date;
-                                oJE.Memo = "DO Charge Out";
-                                oJE.UserFields.Fields.Item("U_ARInvNo").Value = rs.Fields.Item("docnum").Value.ToString();
-                                oJE.UserFields.Fields.Item("U_DelNo").Value = rs.Fields.Item("DelNo").Value.ToString();
-
-                                jehdr.DocType = "ARIV";
-                                jehdr.RefDate = oJE.ReferenceDate;
-                                jehdr.U_ARInvNo = oJE.UserFields.Fields.Item("U_ARInvNo").Value.ToString();
-                                jehdr.U_DelNo = oJE.UserFields.Fields.Item("U_DelNo").Value.ToString();
-                                jehdr.Memo = oJE.Memo;
-
-                                bpType = rs.Fields.Item("U_Type").Value.ToString();
-                                switch (bpType.ToUpper())
-                                {
-                                    case "LOCAL":
-                                        cogsAcct = "500001";
-                                        break;
-                                    case "OVERSEA":
-                                        cogsAcct = "500100";
-                                        break;
-                                    case "INTER-COMPANY":
-                                        cogsAcct = "500200";
-                                        break;
-                                }
-
-
-                                rs.DoQuery("select T3.U_ChargeNo, T3.docnum" +
-                                    " from oinv T0 inner join inv1 T1 on T0.docentry = T1.docentry " +
-                                    " inner join dln1 T2 on T1.baseentry = T2.docentry and T1.basetype = 15 " +
-                                    " and T1.BaseLine = T2.LineNum " +
-                                    " inner join odln T3 on T2.docentry = T3.docentry " +
-                                    " where T0.docentry = " + xmlDoc.InnerText +
-                                    " group by T3.U_ChargeNo, T3.docnum");
-                                if (rs.RecordCount > 0)
-                                {
-                                    rs.MoveFirst();
-
-                                    while (!rs.EoF)
-                                    {
-                                        //productgroup = rs.Fields.Item("U_CostCenter").Value.ToString();
-                                        ChargeNo = rs.Fields.Item("U_ChargeNo").Value.ToString();
-                                        delno = rs.Fields.Item("docnum").Value.ToString();
-                                        //if (string.IsNullOrEmpty(productgroup)) productgroup = "";
-                                        if (!string.IsNullOrEmpty(ChargeNo))
-                                        {
-                                            sql = " select T1.U_CostCenter, round(T6.stockprice * T6.Quantity,2) as total " +
-                                                " from (select T1.U_SOITEMCO, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
-                                                " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
-                                                " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
-                                                " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_SOITEMCO, T5.U_CostCenter) T1" +
-                                                " inner join OIGN T10 on T10.U_DelNo = " + delno +
-                                                " inner join IGN1 T6 on T10.docentry = T6.docentry and T1.U_SOITEMCO = T6.itemcode";
-                                            rs1.DoQuery(sql);
-                                            if (rs1.RecordCount > 0)
-                                            {
-                                                rs1.MoveFirst();
-                                                while (!rs1.EoF)
-                                                {
-                                                    productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
-                                                    temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
-                                                    temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
-                                                    currentline++;
-                                                    if (currentline > 1)
-                                                    {
-                                                        oJE.Lines.Add();
-                                                        oJE.Lines.SetCurrentLine(currentline - 1);
-                                                    }
-                                                    oJE.Lines.AccountCode = cogsAcct;
-                                                    if (temp > 0)
-                                                        oJE.Lines.Credit = Convert.ToDouble(temp);
-                                                    else if (temp < 0)
-                                                        oJE.Lines.Debit = Convert.ToDouble(-temp);
-                                                    if (!string.IsNullOrEmpty(productgroup))
-                                                        oJE.Lines.CostingCode = productgroup;
-
-                                                    jedtl = new JEDetails();
-                                                    jedtl.AccountCode = oJE.Lines.AccountCode;
-                                                    jedtl.CostingCode = oJE.Lines.CostingCode;
-                                                    jedtl.Debit = oJE.Lines.Debit;
-                                                    jedtl.Credit = oJE.Lines.Credit;
-                                                    JEdtls.Add(jedtl);
-
-                                                    invtotaldiff = invtotaldiff + temp;
-
-                                                    rs1.MoveNext();
-                                                }
-                                            }
-
-                                            sql = " select T1.U_CostCenter, round(T7.stockprice * T7.Quantity,2) * -1 as total " +
-                                                " from (select T1.U_ITEMCODE, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
-                                                " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
-                                                " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
-                                                " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_ITEMCODE, T5.U_CostCenter) T1" +
-                                                " inner join OIGE T10 on T10.U_DelNo = " + delno +
-                                                " inner join IGE1 T7 on T10.docentry = T7.docentry and T1.U_ITEMCODE = T7.itemcode";
-                                            rs1.DoQuery(sql);
-                                            if (rs1.RecordCount > 0)
-                                            {
-                                                rs1.MoveFirst();
-                                                while (!rs1.EoF)
-                                                {
-                                                    productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
-                                                    temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
-                                                    temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
-                                                    currentline++;
-                                                    if (currentline > 1)
-                                                    {
-                                                        oJE.Lines.Add();
-                                                        oJE.Lines.SetCurrentLine(currentline - 1);
-                                                    }
-                                                    oJE.Lines.AccountCode = cogsAcct;
-                                                    if (temp > 0)
-                                                        oJE.Lines.Credit = Convert.ToDouble(temp);
-                                                    else if (temp < 0)
-                                                        oJE.Lines.Debit = Convert.ToDouble(-temp);
-                                                    if (!string.IsNullOrEmpty(productgroup))
-                                                        oJE.Lines.CostingCode = productgroup;
-
-                                                    jedtl = new JEDetails();
-                                                    jedtl.AccountCode = oJE.Lines.AccountCode;
-                                                    jedtl.CostingCode = oJE.Lines.CostingCode;
-                                                    jedtl.Debit = oJE.Lines.Debit;
-                                                    jedtl.Credit = oJE.Lines.Credit;
-                                                    JEdtls.Add(jedtl);
-
-                                                    invtotaldiff = invtotaldiff + temp;
-
-                                                    rs1.MoveNext();
-                                                }
-                                            }
-                                        }
-                                        rs.MoveNext();
-                                    }
-                                    if (invtotaldiff != 0)
-                                    {
-                                        currentline++;
-                                        if (currentline > 1)
-                                        {
-                                            oJE.Lines.Add();
-                                            oJE.Lines.SetCurrentLine(currentline - 1);
-                                        }
-                                        oJE.Lines.AccountCode = "150500";// "150400"; Provision for Cost of Goods Sold
-                                        if (invtotaldiff > 0)
-                                            oJE.Lines.Debit = Convert.ToDouble(invtotaldiff);
-                                        else if (invtotaldiff < 0)
-                                            oJE.Lines.Credit = Convert.ToDouble(-invtotaldiff);
-
-                                        jedtl = new JEDetails();
-                                        jedtl.AccountCode = oJE.Lines.AccountCode;
-                                        jedtl.Credit = oJE.Lines.Credit;
-                                        jedtl.Debit = oJE.Lines.Debit;
-                                        JEdtls.Add(jedtl);
-                                    }
-
-                                }
-                                //if (invtotaldiff != 0)
-                                if (currentline > 0)
-                                {
-                                    retcode = oJE.Add();
-                                    if (retcode != 0)
-                                    {
-                                        jehdr.ErrMsg = SAP.SBOCompany.GetLastErrorDescription();
-                                        jehdr.ErrDT = DateTime.Now.ToString("yyyyMMddHHmmss");
-                                        ObjectFunctions.ErrorLog(jehdr, JEdtls);
-                                        //if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
-                                        SAP.SBOApplication.MessageBox(SAP.SBOCompany.GetLastErrorDescription(), 1, "Ok", "", "");
-                                        //FT_ADDON.SAP.SBOApplication.StatusBar.SetText(SAP.SBOCompany.GetLastErrorDescription(), SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                jehdr.ErrMsg = "Data Event After " + ex.Message;
-                jehdr.ErrDT = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                ObjectFunctions.ErrorLog(jehdr, JEdtls);
-                //if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
-                SAP.SBOApplication.MessageBox("Data Event After " + ex.Message, 1, "Ok", "", "");
             }
         }
 
-        private static void CreateJournalEntry(string docEntry)
+        private static void CreateJournalEntry(string docEntry, bool manual = false)
         {
             JEHeader jehdr = new JEHeader();
             JEDetails jedtl;
             List<JEDetails> JEdtls = new List<JEDetails>();
             try
             {
-
                 SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
                 SAPbobsCOM.Recordset rs1 = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
 
-                System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
                 string bpType = "", cogsAcct = "";
                 DateTime date = new DateTime();
                 int retcode = 0;
@@ -663,7 +435,7 @@ namespace FT_ADDON.AYS
                                 jehdr.ErrDT = DateTime.Now.ToString("yyyyMMddHHmmss");
                                 ObjectFunctions.ErrorLog(jehdr, JEdtls);
                                 //if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
-                                SAP.SBOApplication.MessageBox(SAP.SBOCompany.GetLastErrorDescription(), 1, "Ok", "", "");
+                                SAP.SBOApplication.MessageBox(jehdr.ErrMsg, 1, "Ok", "", "");
                                 //FT_ADDON.SAP.SBOApplication.StatusBar.SetText(SAP.SBOCompany.GetLastErrorDescription(), SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
                             }
                         }
@@ -677,6 +449,13 @@ namespace FT_ADDON.AYS
                 ObjectFunctions.ErrorLog(jehdr, JEdtls);
                 //if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
                 SAP.SBOApplication.MessageBox("Data Event After " + ex.Message, 1, "Ok", "", "");
+            }
+            finally
+            {
+                if (manual)
+                {
+                    SAP.SBOApplication.MessageBox("New JE created. Please check.", 1, "Ok", "", "");
+                }
             }
         }
     }
