@@ -225,7 +225,7 @@ namespace FT_ADDON.AYS
                 SAPbobsCOM.Recordset rs1 = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
 
                 string bpType = "", cogsAcct = "";
-                DateTime date = new DateTime();
+                DateTime jedate = DateTime.Today;
                 int retcode = 0;
                 decimal temp = 0;
                 decimal invtotaldiff = 0;
@@ -234,7 +234,7 @@ namespace FT_ADDON.AYS
                 string ChargeNo = "";
                 string sql = "";
                 string delno = "";
-
+                string chargenos = "";
 
                 //sql = "select T0.docdate, T0.docnum, T4.U_Type, min(T1.docnum) as [DelNo] " +
                 //    "from oinv T0 inner join " +
@@ -266,165 +266,165 @@ namespace FT_ADDON.AYS
                     //different = double.Parse(rs.Fields.Item("U_Diff").Value.ToString());
 
                     //if (different != 0)
+                    SAPbobsCOM.JournalEntries oJE = (SAPbobsCOM.JournalEntries)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oJournalEntries);
+
+                    jedate = DateTime.Parse(rs.Fields.Item("docdate").Value.ToString());
+                    oJE.ReferenceDate = jedate;
+                    oJE.Memo = "DO Charge Out";
+                    oJE.UserFields.Fields.Item("U_ARInvNo").Value = rs.Fields.Item("docnum").Value.ToString();
+                    oJE.UserFields.Fields.Item("U_DelNo").Value = rs.Fields.Item("DelNo").Value.ToString();
+
+                    jehdr.DocType = "ARIV";
+                    jehdr.RefDate = oJE.ReferenceDate;
+                    jehdr.U_ARInvNo = oJE.UserFields.Fields.Item("U_ARInvNo").Value.ToString();
+                    jehdr.U_DelNo = oJE.UserFields.Fields.Item("U_DelNo").Value.ToString();
+                    jehdr.Memo = oJE.Memo;
+
+                    bpType = rs.Fields.Item("U_Type").Value.ToString();
+                    switch (bpType.ToUpper())
                     {
-                        SAPbobsCOM.JournalEntries oJE = (SAPbobsCOM.JournalEntries)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oJournalEntries);
+                        case "LOCAL":
+                            cogsAcct = "500001";
+                            break;
+                        case "OVERSEA":
+                            cogsAcct = "500100";
+                            break;
+                        case "INTER-COMPANY":
+                            cogsAcct = "500200";
+                            break;
+                    }
 
-                        date = DateTime.Parse(rs.Fields.Item("docdate").Value.ToString());
-                        oJE.ReferenceDate = date;
-                        oJE.Memo = "DO Charge Out";
-                        oJE.UserFields.Fields.Item("U_ARInvNo").Value = rs.Fields.Item("docnum").Value.ToString();
-                        oJE.UserFields.Fields.Item("U_DelNo").Value = rs.Fields.Item("DelNo").Value.ToString();
 
-                        jehdr.DocType = "ARIV";
-                        jehdr.RefDate = oJE.ReferenceDate;
-                        jehdr.U_ARInvNo = oJE.UserFields.Fields.Item("U_ARInvNo").Value.ToString();
-                        jehdr.U_DelNo = oJE.UserFields.Fields.Item("U_DelNo").Value.ToString();
-                        jehdr.Memo = oJE.Memo;
+                    rs.DoQuery("select T3.U_ChargeNo, T3.docnum" +
+                        " from oinv T0 inner join inv1 T1 on T0.docentry = T1.docentry " +
+                        " inner join dln1 T2 on T1.baseentry = T2.docentry and T1.basetype = 15 " +
+                        " and T1.BaseLine = T2.LineNum " +
+                        " inner join odln T3 on T2.docentry = T3.docentry " +
+                        " where T0.docentry = " + docEntry +
+                        " group by T3.U_ChargeNo, T3.docnum");
+                    if (rs.RecordCount > 0)
+                    {
+                        rs.MoveFirst();
 
-                        bpType = rs.Fields.Item("U_Type").Value.ToString();
-                        switch (bpType.ToUpper())
+                        while (!rs.EoF)
                         {
-                            case "LOCAL":
-                                cogsAcct = "500001";
-                                break;
-                            case "OVERSEA":
-                                cogsAcct = "500100";
-                                break;
-                            case "INTER-COMPANY":
-                                cogsAcct = "500200";
-                                break;
-                        }
-
-
-                        rs.DoQuery("select T3.U_ChargeNo, T3.docnum" +
-                            " from oinv T0 inner join inv1 T1 on T0.docentry = T1.docentry " +
-                            " inner join dln1 T2 on T1.baseentry = T2.docentry and T1.basetype = 15 " +
-                            " and T1.BaseLine = T2.LineNum " +
-                            " inner join odln T3 on T2.docentry = T3.docentry " +
-                            " where T0.docentry = " + docEntry +
-                            " group by T3.U_ChargeNo, T3.docnum");
-                        if (rs.RecordCount > 0)
-                        {
-                            rs.MoveFirst();
-
-                            while (!rs.EoF)
+                            //productgroup = rs.Fields.Item("U_CostCenter").Value.ToString();
+                            ChargeNo = rs.Fields.Item("U_ChargeNo").Value.ToString();
+                            delno = rs.Fields.Item("docnum").Value.ToString();
+                            chargenos = string.IsNullOrEmpty(chargenos)? ChargeNo : chargenos + "," + ChargeNo;
+                            //if (string.IsNullOrEmpty(productgroup)) productgroup = "";
+                            if (!string.IsNullOrEmpty(ChargeNo))
                             {
-                                //productgroup = rs.Fields.Item("U_CostCenter").Value.ToString();
-                                ChargeNo = rs.Fields.Item("U_ChargeNo").Value.ToString();
-                                delno = rs.Fields.Item("docnum").Value.ToString();
-                                //if (string.IsNullOrEmpty(productgroup)) productgroup = "";
-                                if (!string.IsNullOrEmpty(ChargeNo))
+                                sql = " select T1.U_CostCenter, round(T6.stockprice * T6.Quantity,2) as total " +
+                                    " from (select T1.U_SOITEMCO, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
+                                    " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
+                                    " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
+                                    " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_SOITEMCO, T5.U_CostCenter) T1" +
+                                    " inner join OIGN T10 on T10.U_DelNo = " + delno +
+                                    " inner join IGN1 T6 on T10.docentry = T6.docentry and T1.U_SOITEMCO = T6.itemcode";
+                                rs1.DoQuery(sql);
+                                if (rs1.RecordCount > 0)
                                 {
-                                    sql = " select T1.U_CostCenter, round(T6.stockprice * T6.Quantity,2) as total " +
-                                        " from (select T1.U_SOITEMCO, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
-                                        " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
-                                        " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
-                                        " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_SOITEMCO, T5.U_CostCenter) T1" +
-                                        " inner join OIGN T10 on T10.U_DelNo = " + delno +
-                                        " inner join IGN1 T6 on T10.docentry = T6.docentry and T1.U_SOITEMCO = T6.itemcode";
-                                    rs1.DoQuery(sql);
-                                    if (rs1.RecordCount > 0)
+                                    rs1.MoveFirst();
+                                    while (!rs1.EoF)
                                     {
-                                        rs1.MoveFirst();
-                                        while (!rs1.EoF)
+                                        productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
+                                        temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
+                                        temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
+                                        currentline++;
+                                        if (currentline > 1)
                                         {
-                                            productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
-                                            temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
-                                            temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
-                                            currentline++;
-                                            if (currentline > 1)
-                                            {
-                                                oJE.Lines.Add();
-                                                oJE.Lines.SetCurrentLine(currentline - 1);
-                                            }
-                                            oJE.Lines.AccountCode = cogsAcct;
-                                            if (temp > 0)
-                                                oJE.Lines.Credit = Convert.ToDouble(temp);
-                                            else if (temp < 0)
-                                                oJE.Lines.Debit = Convert.ToDouble(-temp);
-                                            if (!string.IsNullOrEmpty(productgroup))
-                                                oJE.Lines.CostingCode = productgroup;
-
-                                            jedtl = new JEDetails();
-                                            jedtl.AccountCode = oJE.Lines.AccountCode;
-                                            jedtl.CostingCode = oJE.Lines.CostingCode;
-                                            jedtl.Debit = oJE.Lines.Debit;
-                                            jedtl.Credit = oJE.Lines.Credit;
-                                            JEdtls.Add(jedtl);
-
-                                            invtotaldiff = invtotaldiff + temp;
-
-                                            rs1.MoveNext();
+                                            oJE.Lines.Add();
+                                            oJE.Lines.SetCurrentLine(currentline - 1);
                                         }
-                                    }
+                                        oJE.Lines.AccountCode = cogsAcct;
+                                        if (temp > 0)
+                                            oJE.Lines.Credit = Convert.ToDouble(temp);
+                                        else if (temp < 0)
+                                            oJE.Lines.Debit = Convert.ToDouble(-temp);
+                                        if (!string.IsNullOrEmpty(productgroup))
+                                            oJE.Lines.CostingCode = productgroup;
 
-                                    sql = " select T1.U_CostCenter, round(T7.stockprice * T7.Quantity,2) * -1 as total " +
-                                        " from (select T1.U_ITEMCODE, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
-                                        " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
-                                        " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
-                                        " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_ITEMCODE, T5.U_CostCenter) T1" +
-                                        " inner join OIGE T10 on T10.U_DelNo = " + delno +
-                                        " inner join IGE1 T7 on T10.docentry = T7.docentry and T1.U_ITEMCODE = T7.itemcode";
-                                    rs1.DoQuery(sql);
-                                    if (rs1.RecordCount > 0)
-                                    {
-                                        rs1.MoveFirst();
-                                        while (!rs1.EoF)
-                                        {
-                                            productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
-                                            temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
-                                            temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
-                                            currentline++;
-                                            if (currentline > 1)
-                                            {
-                                                oJE.Lines.Add();
-                                                oJE.Lines.SetCurrentLine(currentline - 1);
-                                            }
-                                            oJE.Lines.AccountCode = cogsAcct;
-                                            if (temp > 0)
-                                                oJE.Lines.Credit = Convert.ToDouble(temp);
-                                            else if (temp < 0)
-                                                oJE.Lines.Debit = Convert.ToDouble(-temp);
-                                            if (!string.IsNullOrEmpty(productgroup))
-                                                oJE.Lines.CostingCode = productgroup;
+                                        jedtl = new JEDetails();
+                                        jedtl.AccountCode = oJE.Lines.AccountCode;
+                                        jedtl.CostingCode = oJE.Lines.CostingCode;
+                                        jedtl.Debit = oJE.Lines.Debit;
+                                        jedtl.Credit = oJE.Lines.Credit;
+                                        JEdtls.Add(jedtl);
 
-                                            jedtl = new JEDetails();
-                                            jedtl.AccountCode = oJE.Lines.AccountCode;
-                                            jedtl.CostingCode = oJE.Lines.CostingCode;
-                                            jedtl.Debit = oJE.Lines.Debit;
-                                            jedtl.Credit = oJE.Lines.Credit;
-                                            JEdtls.Add(jedtl);
+                                        invtotaldiff = invtotaldiff + temp;
 
-                                            invtotaldiff = invtotaldiff + temp;
-
-                                            rs1.MoveNext();
-                                        }
+                                        rs1.MoveNext();
                                     }
                                 }
-                                rs.MoveNext();
-                            }
-                            if (invtotaldiff != 0)
-                            {
-                                currentline++;
-                                if (currentline > 1)
+
+                                sql = " select T1.U_CostCenter, round(T7.stockprice * T7.Quantity,2) * -1 as total " +
+                                    " from (select T1.U_ITEMCODE, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
+                                    " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
+                                    " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
+                                    " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_ITEMCODE, T5.U_CostCenter) T1" +
+                                    " inner join OIGE T10 on T10.U_DelNo = " + delno +
+                                    " inner join IGE1 T7 on T10.docentry = T7.docentry and T1.U_ITEMCODE = T7.itemcode";
+                                rs1.DoQuery(sql);
+                                if (rs1.RecordCount > 0)
                                 {
-                                    oJE.Lines.Add();
-                                    oJE.Lines.SetCurrentLine(currentline - 1);
+                                    rs1.MoveFirst();
+                                    while (!rs1.EoF)
+                                    {
+                                        productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
+                                        temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
+                                        temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
+                                        currentline++;
+                                        if (currentline > 1)
+                                        {
+                                            oJE.Lines.Add();
+                                            oJE.Lines.SetCurrentLine(currentline - 1);
+                                        }
+                                        oJE.Lines.AccountCode = cogsAcct;
+                                        if (temp > 0)
+                                            oJE.Lines.Credit = Convert.ToDouble(temp);
+                                        else if (temp < 0)
+                                            oJE.Lines.Debit = Convert.ToDouble(-temp);
+                                        if (!string.IsNullOrEmpty(productgroup))
+                                            oJE.Lines.CostingCode = productgroup;
+
+                                        jedtl = new JEDetails();
+                                        jedtl.AccountCode = oJE.Lines.AccountCode;
+                                        jedtl.CostingCode = oJE.Lines.CostingCode;
+                                        jedtl.Debit = oJE.Lines.Debit;
+                                        jedtl.Credit = oJE.Lines.Credit;
+                                        JEdtls.Add(jedtl);
+
+                                        invtotaldiff = invtotaldiff + temp;
+
+                                        rs1.MoveNext();
+                                    }
                                 }
-                                oJE.Lines.AccountCode = "150500";// "150400"; Provision for Cost of Goods Sold
-                                if (invtotaldiff > 0)
-                                    oJE.Lines.Debit = Convert.ToDouble(invtotaldiff);
-                                else if (invtotaldiff < 0)
-                                    oJE.Lines.Credit = Convert.ToDouble(-invtotaldiff);
-
-                                jedtl = new JEDetails();
-                                jedtl.AccountCode = oJE.Lines.AccountCode;
-                                jedtl.Credit = oJE.Lines.Credit;
-                                jedtl.Debit = oJE.Lines.Debit;
-                                JEdtls.Add(jedtl);
                             }
-
+                            rs.MoveNext();
                         }
+
+                        if (invtotaldiff != 0)
+                        {
+                            currentline++;
+                            if (currentline > 1)
+                            {
+                                oJE.Lines.Add();
+                                oJE.Lines.SetCurrentLine(currentline - 1);
+                            }
+                            oJE.Lines.AccountCode = "150500";// "150400"; Provision for Cost of Goods Sold
+                            if (invtotaldiff > 0)
+                                oJE.Lines.Debit = Convert.ToDouble(invtotaldiff);
+                            else if (invtotaldiff < 0)
+                                oJE.Lines.Credit = Convert.ToDouble(-invtotaldiff);
+
+                            jedtl = new JEDetails();
+                            jedtl.AccountCode = oJE.Lines.AccountCode;
+                            jedtl.Credit = oJE.Lines.Credit;
+                            jedtl.Debit = oJE.Lines.Debit;
+                            JEdtls.Add(jedtl);
+                        }
+
                         //if (invtotaldiff != 0)
                         if (currentline > 0)
                         {
@@ -439,7 +439,35 @@ namespace FT_ADDON.AYS
                                 //FT_ADDON.SAP.SBOApplication.StatusBar.SetText(SAP.SBOCompany.GetLastErrorDescription(), SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
                             }
                         }
+                        else
+                        {
+                            if (manual)
+                            {
+                                SAP.SBOApplication.MessageBox($"CM No: {chargenos}\r\nNo provision items or values different found. Please check.", 1, "Ok", "", "");
+                                return;
+                            }
+                        }
                     }
+                    else
+                    {
+                        if (manual)
+                        {
+                            SAP.SBOApplication.MessageBox("No provision Delivery found. Please check.", 1, "Ok", "", "");
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    if (manual)
+                    {
+                        SAP.SBOApplication.MessageBox("No provision invoice found. Please check.", 1, "Ok", "", "");
+                        return;
+                    }
+                }
+                if (manual)
+                {
+                    SAP.SBOApplication.MessageBox("New JE created. Please check.", 1, "Ok", "", "");
                 }
             }
             catch (Exception ex)
@@ -449,13 +477,6 @@ namespace FT_ADDON.AYS
                 ObjectFunctions.ErrorLog(jehdr, JEdtls);
                 //if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
                 SAP.SBOApplication.MessageBox("Data Event After " + ex.Message, 1, "Ok", "", "");
-            }
-            finally
-            {
-                if (manual)
-                {
-                    SAP.SBOApplication.MessageBox("New JE created. Please check.", 1, "Ok", "", "");
-                }
             }
         }
     }
