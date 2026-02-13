@@ -105,14 +105,14 @@ namespace FT_ADDON.AYS
                                         BubbleEvent = false;
                                         SAP.SBOApplication.MessageBox("Overdue SP Error");
                                     }
-                                    else if (cnt > 0)
+                                    else if (cnt >= 0)
                                     {
                                         if (formtype == "139" || formtype == "149")
                                         {
                                             oEdit = (SAPbouiCOM.EditText)oForm.Items.Item("U_CTERM").Specific;
                                             oEdit.String = "Y";
                                         }
-                                        if (NotifyV == "MSG_BLOCK")
+                                        if (cnt > 0 && NotifyV == "MSG_BLOCK")
                                         {
                                             temp = ft_Functions.CheckSPNeeded("OD", formtype, docnum);
                                             if (temp == -1)
@@ -136,9 +136,9 @@ namespace FT_ADDON.AYS
                                                 oComboapp = (SAPbouiCOM.ComboBox)oItem.Specific;
                                                 oComboapp.Select("W", SAPbouiCOM.BoSearchKey.psk_ByValue);
                                             }
+                                            SAP.SBOApplication.MessageBox($"Overdue invoices {Environment.NewLine}Oldest Invoice# {documentnum}{Environment.NewLine}Dated {documentdate}{Environment.NewLine}Due By {documentduedate}"
+                                              , 1, "Ok", "", "");
                                         }
-                                        SAP.SBOApplication.MessageBox($"Overdue invoices {Environment.NewLine}Oldest Invoice# {documentnum}{Environment.NewLine}Dated {documentdate}{Environment.NewLine}Due By {documentduedate}"
-                                            , 1, "Ok", "", "");
 
                                     }
 
@@ -166,7 +166,7 @@ namespace FT_ADDON.AYS
                                         BubbleEvent = false;
                                         SAP.SBOApplication.MessageBox("Credit Limit SP Error");
                                     }
-                                    else if (cnt > 0)
+                                    else if (cnt >= 0)
                                     {
                                         if (formtype == "139" || formtype == "149")
                                         {
@@ -182,7 +182,7 @@ namespace FT_ADDON.AYS
                                             oEdit = (SAPbouiCOM.EditText)oItem.Specific;
                                             oEdit.Value = c_limit.ToString();
                                         }
-                                        if (NotifyV == "MSG_BLOCK")
+                                        if (cnt > 0 && NotifyV == "MSG_BLOCK")
                                         {
                                             temp = ft_Functions.CheckSPNeeded("CL", formtype, docnum);
                                             if (temp == -1)
@@ -211,8 +211,8 @@ namespace FT_ADDON.AYS
                                                 }
                                             }
 
+                                            SAP.SBOApplication.MessageBox($"Credit Limit Exceeded {Environment.NewLine}Limit Type - {limitType}{Environment.NewLine}Total Credit Limit Use - RM {c_usage.ToString("#,###,###,###.00")}{Environment.NewLine}Credit Limit Amount - RM {c_limit.ToString("#,###,###,###.00")}{Environment.NewLine}Over Limit Amount - RM {different.ToString("#,###,###,###.00")}", 1, "Ok", "", "");
                                         }
-                                        SAP.SBOApplication.MessageBox($"Credit Limit Exceeded {Environment.NewLine}Limit Type - {limitType}{Environment.NewLine}Total Credit Limit Use - RM {c_usage.ToString("#,###,###,###.00")}{Environment.NewLine}Credit Limit Amount - RM {c_limit.ToString("#,###,###,###.00")}{Environment.NewLine}Over Limit Amount - RM {different.ToString("#,###,###,###.00")}", 1, "Ok", "", "");
                                     }
 
                                 }

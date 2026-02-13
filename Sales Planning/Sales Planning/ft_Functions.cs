@@ -121,14 +121,18 @@ namespace FT_ADDON.AYS
                 }
                 else
                 {
+                    documentnum = rs.Fields.Item(1).Value.ToString();
+                    documentdate = rs.Fields.Item(2).Value.ToString();
+                    documentduedate = rs.Fields.Item(3).Value.ToString();
+
                     if (rs.Fields.Item(0).Value.ToString() != "0")
                     {
-                        documentnum = rs.Fields.Item(1).Value.ToString();
-                        documentdate = rs.Fields.Item(2).Value.ToString();
-                        documentduedate = rs.Fields.Item(3).Value.ToString();
                         return 1;
                     }
-
+                    else
+                    {
+                        return 0;
+                    }
                 }
                 return 0;
             }
@@ -219,15 +223,18 @@ namespace FT_ADDON.AYS
                     }
                     else
                     {
+                        limitType = rs.Fields.Item(1).Value.ToString();
+                        different = double.Parse(rs.Fields.Item(2).Value.ToString());
+                        currentUsage = double.Parse(rs.Fields.Item(3).Value.ToString());
+                        temporaryLimit = double.Parse(rs.Fields.Item(4).Value.ToString());
+                        customerLimit = double.Parse(rs.Fields.Item(5).Value.ToString());
+
                         if (rs.Fields.Item(0).Value.ToString() != "0")
                         {
-                            limitType = rs.Fields.Item(1).Value.ToString();
-                            different = double.Parse(rs.Fields.Item(2).Value.ToString());
-                            currentUsage = double.Parse(rs.Fields.Item(3).Value.ToString());
-                            temporaryLimit = double.Parse(rs.Fields.Item(4).Value.ToString());
-                            customerLimit = double.Parse(rs.Fields.Item(5).Value.ToString());
                             return 1;
                         }
+                        else
+                            return 0;
                     }
                     return 0;
                 }
