@@ -204,6 +204,9 @@ namespace FT_ADDON.AYS
                 if (!app.udfExist("@FT_SPLAN", "APPTIME"))
                     if (!app.createField("@FT_SPLAN", "APPTIME", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Numeric, 0, "")) goto ErrorHandler;
 
+                if (!app.udfExist("@FT_SPLAN", "CREDIT"))
+                    if (!app.createField("@FT_SPLAN", "CREDIT", "Hit Credit Limit", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "N")) goto ErrorHandler;
+
                 if (!app.createTable("FT_SPLAN1", "Sales Planning Detail", SAPbobsCOM.BoUTBTableType.bott_DocumentLines)) goto ErrorHandler;
                 if (!app.tableGotField("@FT_SPLAN1"))
                 {
