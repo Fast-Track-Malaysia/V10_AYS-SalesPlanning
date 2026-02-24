@@ -1,0 +1,5 @@
+declare @docnum int = 262109327 
+declare @visorder int = 4
+
+update T1 set U_LSTATUS = 'O' from [@FT_SPLAN] T0 inner join [@FT_SPLAN1] T1 on T0.DocEntry = T1.DocEntry
+where T0.DocNum = @docnum and T1.VisOrder = @visorder
