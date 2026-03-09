@@ -676,6 +676,8 @@ namespace FT_ADDON.AYS
 
                 if (!app.udfExist("ORDR", "CTERM"))
                     if (!app.createField("ORDR", "CTERM", "Credit Term", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "N")) goto ErrorHandler;
+                if (!app.udfExist("ORDR", "CTERMCL"))
+                    if (!app.createField("ORDR", "CTERMCL", "Credit Limit(Hit)", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "N")) goto ErrorHandler;
 
                 if (!app.udfExist("INV1", "InvCost"))
                     if (!app.createField("INV1", "InvCost", "Invoice Cost", SAPbobsCOM.BoFieldTypes.db_Float, 10, "0", false, SAPbobsCOM.BoFldSubTypes.st_Price)) goto ErrorHandler;
@@ -734,6 +736,7 @@ namespace FT_ADDON.AYS
                     if (!app.createField("@FT_APPTPLOG", "APPTIME", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Numeric, 0, "")) goto ErrorHandler;
                     if (!app.createField("@FT_APPTPLOG", "ObjType", "Object Type", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
                 }
+
                 if (!app.createTable("FT_APPSOLOG", "SO Approval Log", SAPbobsCOM.BoUTBTableType.bott_DocumentLines)) goto ErrorHandler;
                 if (!app.tableGotField("@FT_APPSOLOG"))
                 {
@@ -743,6 +746,17 @@ namespace FT_ADDON.AYS
                     if (!app.createField("@FT_APPSOLOG", "APPDATE", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Date, 0, "")) goto ErrorHandler;
                     if (!app.createField("@FT_APPSOLOG", "APPTIME", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Numeric, 0, "")) goto ErrorHandler;
                     if (!app.createField("@FT_APPSOLOG", "ObjType", "Object Type", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+                }
+
+                if (!app.createTable("FT_APPSPLOG", "SP Approval Log", SAPbobsCOM.BoUTBTableType.bott_DocumentLines)) goto ErrorHandler;
+                if (!app.tableGotField("@FT_APPSPLOG"))
+                {
+                    if (!app.createField("@FT_APPSPLOG", "APP", "Approval", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "O", false, SAPbobsCOM.BoFldSubTypes.st_None, "Y:Approved|W:Pending|N:Reject|O:OPEN", "")) goto ErrorHandler;
+                    if (!app.createField("@FT_APPSPLOG", "APPRE", "Approval Remarks", SAPbobsCOM.BoFieldTypes.db_Alpha, 254, "")) goto ErrorHandler;
+                    if (!app.createField("@FT_APPSPLOG", "APPBY", "Approved by", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+                    if (!app.createField("@FT_APPSPLOG", "APPDATE", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Date, 0, "")) goto ErrorHandler;
+                    if (!app.createField("@FT_APPSPLOG", "APPTIME", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Numeric, 0, "")) goto ErrorHandler;
+                    if (!app.createField("@FT_APPSPLOG", "ObjType", "Object Type", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
                 }
 
                 #endregion

@@ -1,0 +1,27 @@
+ALTER proc [dbo].[FT_AfterAPP]
+
+@SourceTable nvarchar(50),
+@docentry int,
+@app nvarchar(50)
+
+
+AS
+
+begin
+declare @lineid int = 0
+
+if @SourceTable = 'ORDR'
+begin
+	select @lineid = count(*)
+	from [@FT_APPSOLOG]
+	where DocEntry = @docentry
+
+	insert into [@FT_APPSOLOG]
+	( DocEntry, LineId, VisOrder, U_APP, U_APPBY, U_APPDATE, U_APPRE, U_APPTIME, U_ObjType )
+	select T0.DocEntry, @lineid + 1, @lineid + 1, T0.U_APP, T0.U_APPBY, T0.U_APPDATE, T0.U_APPRE, T0.U_APPTIME, T0.ObjType
+	from ORDR T0
+	where T0.DocEntry = @docentry
+end
+	
+end
+

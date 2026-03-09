@@ -107,11 +107,6 @@ namespace FT_ADDON.AYS
                                     }
                                     else if (cnt >= 0)
                                     {
-                                        if (formtype == "139" || formtype == "149")
-                                        {
-                                            oEdit = (SAPbouiCOM.EditText)oForm.Items.Item("U_CTERM").Specific;
-                                            oEdit.String = "Y";
-                                        }
                                         if (cnt > 0 && NotifyV == "MSG_BLOCK")
                                         {
                                             temp = ft_Functions.CheckSPNeeded("OD", formtype, docnum);
@@ -120,6 +115,16 @@ namespace FT_ADDON.AYS
                                                 BubbleEvent = false;
                                                 return;
                                             }
+                                        }
+                                        if (cnt > 0)
+                                            if (formtype == "139" || formtype == "149")
+                                            {
+                                                oEdit = (SAPbouiCOM.EditText)oForm.Items.Item("U_CTERM").Specific;
+                                                oEdit.String = "Y";
+                                            }
+
+                                        if (cnt > 0 && NotifyV == "MSG_BLOCK")
+                                        {
                                             if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
                                             {
                                                 if (temp > 0)
@@ -190,6 +195,16 @@ namespace FT_ADDON.AYS
                                                 BubbleEvent = false;
                                                 return;
                                             }
+                                        }
+                                        if (cnt > 0)
+                                            if (formtype == "139" || formtype == "149")
+                                            {
+                                                oEdit = (SAPbouiCOM.EditText)oForm.Items.Item("U_CTERMCL").Specific;
+                                                oEdit.String = "Y";
+                                            }
+
+                                        if (cnt > 0 && NotifyV == "MSG_BLOCK")
+                                        {
                                             if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
                                             {
                                                 if (temp > 0)
