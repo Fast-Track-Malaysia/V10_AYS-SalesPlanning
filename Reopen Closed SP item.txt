@@ -1,0 +1,5 @@
+declare @SP_Number int = 272101257 -- sales planning number
+declare @Vis_Number int = 3 -- sales planning's item line number
+
+update T1 set U_LSTATUS = 'O' from [@FT_SPLAN1] T1 inner join [@FT_SPLAN] T0 on T1.DocEntry = T0.DocEntry
+where T0.DocNum = @SP_Number and T1.VisOrder = @Vis_Number and T1.U_LSTATUS = 'C'
