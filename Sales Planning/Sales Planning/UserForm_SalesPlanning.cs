@@ -1109,7 +1109,7 @@ namespace FT_ADDON.AYS
                 SAPbouiCOM.DBDataSource ods = oForm.DataSources.DBDataSources.Item("@" + dsname1);
                 if (ods.Size > 0)
                 {
-                    if (dsname == "FT_TPPLAN")
+                    if (dsname == "FT_TPPLAN" || dsname == "FT_SPLAN")
                     {
                         if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_ADDRESS", 0).ToString().Trim() == "")
                         {
@@ -2234,7 +2234,14 @@ namespace FT_ADDON.AYS
                         string dsname1 = oForm.DataSources.UserDataSources.Item("dsname1").Value;
                         string dsnameb = oForm.DataSources.UserDataSources.Item("dsnameb").Value;
 
-                        if (dsname == "FT_TPPLAN")
+                        if (dsname == "FT_SPLAN")
+                        {
+                            if (oMatrix.RowCount == 1)
+                            {
+                                oForm.DataSources.DBDataSources.Item("@" + dsname).SetValue("U_ADDRESS", 0, "");
+                            }
+                        }
+                        else if (dsname == "FT_TPPLAN")
                         {
                             if (oMatrix.RowCount == 1)
                             {

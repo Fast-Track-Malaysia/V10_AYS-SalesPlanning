@@ -271,6 +271,8 @@ namespace FT_ADDON.AYS
                 //if (!app.createField("@FT_SPLAN1", "RPONO", "Reserved PO No.", SAPbobsCOM.BoFieldTypes.db_Numeric, 11, "0")) goto ErrorHandler;
                 //if (!app.createField("@FT_SPLAN1", "RPOQTY", "Reserved Stock Qty", SAPbobsCOM.BoFieldTypes.db_Float, 0, "0", false, SAPbobsCOM.BoFldSubTypes.st_Quantity)) goto ErrorHandler;
 
+                if (!app.udfExist("@FT_SPLAN", "ADDRESS"))
+                    if (!app.createField("@FT_SPLAN", "ADDRESS", "Address", SAPbobsCOM.BoFieldTypes.db_Alpha, 254, "")) goto ErrorHandler;
                 #endregion
                 #region transport planning
                 if (!app.createTable("FT_TPPLAN", "Transport Planning", SAPbobsCOM.BoUTBTableType.bott_Document)) goto ErrorHandler;
