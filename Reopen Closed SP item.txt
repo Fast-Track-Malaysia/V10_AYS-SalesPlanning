@@ -1,5 +1,26 @@
-declare @SP_Number int = 272101257 -- sales planning number
-declare @Vis_Number int = 3 -- sales planning's item line number
+declare @SP_Number int = 272107037 -- sales planning number
+declare @Vis_Number int = 1 -- sales planning's item line number
 
-update T1 set U_LSTATUS = 'O' from [@FT_SPLAN1] T1 inner join [@FT_SPLAN] T0 on T1.DocEntry = T0.DocEntry
-where T0.DocNum = @SP_Number and T1.VisOrder = @Vis_Number and T1.U_LSTATUS = 'C'
+exec "ft_ReopenSPItem" @SP_Number, @Vis_Number
+
+
+
+create proc [dbo].[ft_ReopenSPItem]
+
+@SP_Number int --= 272107037 -- sales planning number
+, @Vis_Number int --= 1 -- sales planning's item line number
+
+AS
+begin
+	if exists (select 1 from [@FT_SPLAN1] T1 inner join [@FT_SPLAN] T0 on T1.DocEntry = T0.DocEntry
+		where T0.DocNum = @SP_Number and T1.VisOrder = @Vis_Number and T1.U_LSTATUS = 'C')
+	begin
+		update T1 set U_LSTATUS = 'O' from [@FT_SPLAN1] T1 inner join [@FT_SPLAN] T0 on T1.DocEntry = T0.DocEntry
+		where T0.DocNum = @SP_Number and T1.VisOrder = @Vis_Number and T1.U_LSTATUS = 'C'
+		Print concat(@SP_Number, '-line#', @Vis_Number, ' reopen done')
+	end
+	else
+	begin
+		Print concat(@SP_Number, '-line#', @Vis_Number, ' is not in close status')
+	end
+end

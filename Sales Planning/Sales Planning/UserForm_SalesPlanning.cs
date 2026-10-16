@@ -946,7 +946,7 @@ namespace FT_ADDON.AYS
                 bool found = false;
                 for (int x = 0; x < ods1.Size; x++)
                 {
-                    if (float.Parse(ods1.GetValue("U_TPQTY", x).ToString()) > 0)
+                    if (decimal.Parse(ods1.GetValue("U_TPQTY", x).ToString()) > 0)
                         found = true;
                 }
                 if (found)
@@ -962,10 +962,10 @@ namespace FT_ADDON.AYS
                 dt.Columns.Add("BASEOBJ", typeof(string));
                 dt.Columns.Add("BASEENT", typeof(string));
                 dt.Columns.Add("BASELINE", typeof(string));
-                dt.Columns.Add("SOQTY", typeof(float));
+                dt.Columns.Add("SOQTY", typeof(decimal));
                 string sql = "";
                 string table = "";
-                float ropenqty = 0;
+                decimal ropenqty = 0;
                 for (int x = 0; x < ods1.Size; x++)
                 {
                     found = false;
@@ -997,23 +997,23 @@ namespace FT_ADDON.AYS
                         rs.DoQuery(sql);
                         if (rs.RecordCount > 0)
                         {
-                            ropenqty = float.Parse(rs.Fields.Item(0).Value.ToString());
+                            ropenqty = decimal.Parse(rs.Fields.Item(0).Value.ToString());
                             dr["SOQTY"] = ropenqty;
                         }
                         else
                         {
                             dr["SOQTY"] = 0;
                         }
-                        //if (float.TryParse(ods1.GetValue("U_SOQTY", x), out ropenqty))
+                        //if (decimal.TryParse(ods1.GetValue("U_SOQTY", x), out ropenqty))
                         //    dr["SOQTY"] = ropenqty;
                         //else
                         //    dr["SOQTY"] = 0;
                     }
                 }
-                float quantity = 0;
+                decimal quantity = 0;
                 foreach (System.Data.DataRow dr in dt.Rows)
                 {
-                    ropenqty = float.Parse(dr["SOQTY"].ToString());
+                    ropenqty = decimal.Parse(dr["SOQTY"].ToString());
                     found = false;
                     for (int x = 0; x < ods1.Size; x++)
                     {
@@ -1031,7 +1031,7 @@ namespace FT_ADDON.AYS
                                 if (isDuplicate)
                                     ods1.SetValue("U_QUANTITY", x, ropenqty.ToString());
                             }
-                            if (!float.TryParse(ods1.GetValue("U_QUANTITY", x), out quantity))
+                            if (!decimal.TryParse(ods1.GetValue("U_QUANTITY", x), out quantity))
                                 quantity = 0;
                             ropenqty = ropenqty - quantity;
                         }
@@ -1053,12 +1053,12 @@ namespace FT_ADDON.AYS
                 SAPbouiCOM.Matrix oMatrix = (SAPbouiCOM.Matrix)oForm.Items.Item("grid1").Specific;
                 oMatrix.FlushToDataSource();
                 SAPbouiCOM.DBDataSource ods1 = oForm.DataSources.DBDataSources.Item("@" + dsname1);
-                float linetotal = 0;
-                float doctotal = 0;
+                decimal linetotal = 0;
+                decimal doctotal = 0;
 
                 for (int x = 0; x < ods1.Size; x++)
                 {
-                    linetotal = float.Parse(ods1.GetValue("U_QUANTITY", x).ToString()) * float.Parse(ods1.GetValue("U_WEIGHT", x).ToString()) / 1000;
+                    linetotal = decimal.Parse(ods1.GetValue("U_QUANTITY", x).ToString()) * decimal.Parse(ods1.GetValue("U_WEIGHT", x).ToString()) / 1000;
                     ods1.SetValue("U_LTOTAL", x, linetotal.ToString());
                     //if (x + 1 == row)
                     //{
@@ -1087,11 +1087,11 @@ namespace FT_ADDON.AYS
                 }
                 else if (ods.GetValue("U_AREA", 0).ToString().Substring(0, 1) == "X")
                 {
-                    doctotal = float.Parse(ods.GetValue("U_APRICE", 0));
+                    doctotal = decimal.Parse(ods.GetValue("U_APRICE", 0));
                 }
                 else
                 {
-                    linetotal = float.Parse(ods.GetValue("U_APRICE", 0).ToString());
+                    linetotal = decimal.Parse(ods.GetValue("U_APRICE", 0).ToString());
                     doctotal = doctotal * linetotal;
                 }
                 ods.SetValue("U_DOCTOTAL", 0, doctotal.ToString());
@@ -3556,17 +3556,17 @@ namespace FT_ADDON.AYS
                         //{
                         //    oDel.UserFields.Fields.Item("U_Area").Value = rs.Fields.Item("U_AREA").Value.ToString();
                         //}
-                        //float temp = 0;
-                        //if (float.TryParse(rs.Fields.Item("U_DOCTOTAL").Value.ToString(), out temp))
+                        //decimal temp = 0;
+                        //if (decimal.TryParse(rs.Fields.Item("U_DOCTOTAL").Value.ToString(), out temp))
                         //{
                         //    oDel.UserFields.Fields.Item("U_Total_TC").Value = temp;
                         //}
                         //temp = 0;
-                        //if (float.TryParse(rs.Fields.Item("U_APRICE").Value.ToString(), out temp))
+                        //if (decimal.TryParse(rs.Fields.Item("U_APRICE").Value.ToString(), out temp))
                         //{
                         //    oDel.UserFields.Fields.Item("U_UnitCost_MT").Value = temp;                            
                         //}
-                        
+
                         oDel.Address2 = rs.Fields.Item("Address").Value.ToString();
                         #region einvoice
                         ft_Functions.AssignEivHeader(oOrder, oDel);
